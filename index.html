@@ -185,7 +185,13 @@
                             </button>
                         </div>
                     </div>
-                    <input type="file" id="fileInput" accept=".pdf,.jpg,.png,.jpeg" hidden>
+                </div>
+            </div>
+
+            <!-- Upload Review State -->
+            <div class="upload-review-state hidden" id="uploadReviewState">
+                <div class="upload-review-content" id="uploadReviewContent">
+                    <!-- Dynamically populated by JS -->
                 </div>
             </div>
 
@@ -212,6 +218,7 @@
                     </div>
                 </div>
             </div>
+            <input type="file" id="fileInput" accept=".pdf,.jpg,.png,.jpeg" hidden>
         </main>
 
         <!-- RIGHT CONTEXT PANEL -->
@@ -234,6 +241,12 @@
                     </svg>
                 </div>
                 <p>Upload a report to see patient context</p>
+            </div>
+
+            <!-- Uploaded Reports List (pre-processing) -->
+            <div class="context-reports hidden" id="contextReports">
+                <div class="context-reports-title">Uploaded Reports</div>
+                <div class="context-reports-list" id="contextReportsList"></div>
             </div>
 
             <!-- Patient Data -->
@@ -342,6 +355,36 @@
 
     <!-- Mobile overlay -->
     <div class="mobile-overlay hidden" id="mobileOverlay"></div>
+
+    <!-- Biomarker Review Drawer -->
+    <div class="bm-drawer-overlay hidden" id="bmDrawerOverlay">
+        <div class="bm-drawer" id="bmDrawer">
+            <div class="bm-drawer-header">
+                <div class="bm-drawer-title-block">
+                    <h3>Extracted Biomarkers</h3>
+                    <div class="bm-drawer-summary">
+                        <span class="bm-total-count">16 detected</span>
+                        <span class="bm-abnormal-count">8 abnormal</span>
+                    </div>
+                </div>
+                <button class="bm-drawer-close" id="bmDrawerClose">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="bm-group-tabs" id="bmGroupTabs">
+                <button class="bm-group-tab active" data-group="metabolic">Metabolic</button>
+                <button class="bm-group-tab" data-group="cardiovascular">Cardiovascular</button>
+                <button class="bm-group-tab" data-group="nutritional">Nutritional</button>
+                <button class="bm-group-tab" data-group="kidney">Kidney</button>
+                <button class="bm-group-tab" data-group="liver">Liver</button>
+            </div>
+            <div class="bm-drawer-body" id="bmDrawerBody">
+                <!-- populated by JS -->
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>

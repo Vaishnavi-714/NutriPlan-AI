@@ -12,6 +12,8 @@ const state = {
     contextVisible: false,
     sidebarVisible: true,
     planGenerated: false,
+    uploadedFiles: [],
+    uploadState: 'idle', // 'idle' | 'review' | 'processing' | 'complete'
     selectedPreferences: {
         diet: [],
         allergies: [],
@@ -34,6 +36,8 @@ const els = {
     sidebarToggle: $('#sidebarToggle'),
     mainContent: $('#mainContent'),
     welcomeState: $('#welcomeState'),
+    uploadReviewState: $('#uploadReviewState'),
+    uploadReviewContent: $('#uploadReviewContent'),
     chatState: $('#chatState'),
     chatMessages: $('#chatMessages'),
     promptInput: $('#promptInput'),
@@ -49,6 +53,8 @@ const els = {
     patientList: $('#patientList'),
     contextPanel: $('#contextPanel'),
     contextEmpty: $('#contextEmpty'),
+    contextReports: $('#contextReports'),
+    contextReportsList: $('#contextReportsList'),
     contextData: $('#contextData'),
     contextPanelClose: $('#contextPanelClose'),
     greeting: $('#greeting'),
@@ -183,6 +189,8 @@ function startNewPatient() {
     state.currentPatient = null;
     state.chatHistory = [];
     state.planGenerated = false;
+    state.uploadedFiles = [];
+    state.uploadState = 'idle';
     state.selectedPreferences = {
         diet: [], allergies: [], conditions: [],
         cuisine: [], activity: null, goals: [], notes: ''
@@ -190,9 +198,11 @@ function startNewPatient() {
 
     // Reset UI
     els.welcomeState.classList.remove('hidden');
+    els.uploadReviewState.classList.add('hidden');
     els.chatState.classList.add('hidden');
     els.chatMessages.innerHTML = '';
     els.contextEmpty.classList.remove('hidden');
+    els.contextReports.classList.add('hidden');
     els.contextData.classList.add('hidden');
     els.promptInput.value = '';
 
@@ -262,35 +272,277 @@ function handleFileUpload(e) {
 }
 
 function simulateReportUpload(filename) {
+    // If already in chat (post-processing), add inline as before
+    if (state.uploadState === 'complete') {
+        addMessage('user', `Uploaded: ${filename}`, true);
+        showTypingIndicator();
+        setTimeout(() => {
+            removeTypingIndicator();
+            addAIMessage(createShimmerContent());
+            setTimeout(() => {
+                removeLastMessage();
+                addAIMessage(createExtractionMessage());
+                showContextPanel();
+                setTimeout(() => {
+                    showTypingIndicator();
+                    setTimeout(() => {
+                        removeTypingIndicator();
+                        addAIMessage(createContextCollectionUI());
+                        scrollChatToBottom();
+                    }, 1200);
+                }, 800);
+            }, 2000);
+        }, 1500);
+        return;
+    }
+
+    // Add file to the pre-processing queue
+    state.uploadedFiles.push(filename);
+    state.uploadState = 'review';
+
+    // Hide welcome, show review state
+    els.welcomeState.classList.add('hidden');
+    els.chatState.classList.add('hidden');
+    els.uploadReviewState.classList.remove('hidden');
+
+    // Render the review card
+    updateReviewCard();
+
+    // Update right panel with file list
+    updateRightPanelReports();
+}
+
+// ============================================
+// UPLOAD REVIEW CARD
+// ============================================
+function updateReviewCard() {
+    const files = state.uploadedFiles;
+    if (files.length === 1) {
+        els.uploadReviewContent.innerHTML = createSingleUploadCard(files[0]);
+    } else {
+        els.uploadReviewContent.innerHTML = createMultiUploadCard(files);
+    }
+    bindReviewCardButtons();
+}
+
+function createSingleUploadCard(filename) {
+    return `
+        <div class="upload-action-card">
+            <div class="upload-success-badge">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20,6 9,17 4,12"/>
+                </svg>
+            </div>
+            <div class="upload-action-title">
+                <em class="upload-action-filename">${filename}</em> uploaded
+            </div>
+            <p class="upload-action-subtitle">Would you like to add more reports before processing?</p>
+            <div class="upload-action-buttons">
+                <button class="upload-more-btn" id="uploadMoreBtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Upload More
+                </button>
+                <button class="process-reports-btn" id="processReportsBtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                    </svg>
+                    Process Report
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function createMultiUploadCard(files) {
+    const chipHTML = files.map((f, i) => `
+        <div class="upload-report-chip" style="animation-delay:${i * 0.07}s">
+            <div class="upload-report-chip-icon">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20,6 9,17 4,12"/>
+                </svg>
+            </div>
+            <span class="upload-report-chip-name">${f}</span>
+        </div>
+    `).join('');
+
+    return `
+        <div class="upload-action-card multi">
+            <div class="upload-action-title">${files.length} Reports Ready</div>
+            <div class="upload-report-chips">${chipHTML}</div>
+            <div class="upload-action-buttons">
+                <button class="upload-more-btn" id="uploadMoreBtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 5v14M5 12h14"/>
+                    </svg>
+                    Add More
+                </button>
+                <button class="process-reports-btn" id="processReportsBtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                    </svg>
+                    Process ${files.length} Reports
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function bindReviewCardButtons() {
+    const uploadMoreBtn = document.getElementById('uploadMoreBtn');
+    const processBtn = document.getElementById('processReportsBtn');
+    if (uploadMoreBtn) {
+        uploadMoreBtn.addEventListener('click', () => els.fileInput.click());
+    }
+    if (processBtn) {
+        processBtn.addEventListener('click', processReports);
+    }
+}
+
+// ============================================
+// PROCESS REPORTS — triggers analysis flow
+// ============================================
+function processReports() {
+    const files = [...state.uploadedFiles];
+    state.uploadState = 'processing';
+
+    // Transition to chat
+    els.uploadReviewState.classList.add('hidden');
     transitionToChat();
 
-    // User message
-    addMessage('user', `Uploaded: ${filename}`, true);
+    // Show uploaded files as attachment chips (not chat bubbles)
+    showReportAttachments(files);
 
-    // Show AI processing
+    // Show staged processing card in AI message
     showTypingIndicator();
-
     setTimeout(() => {
         removeTypingIndicator();
-        addAIMessage(createShimmerContent());
-
-        // Simulate extraction
-        setTimeout(() => {
-            removeLastMessage();
-            addAIMessage(createExtractionMessage());
-            showContextPanel();
-
-            // After showing extraction, ask for preferences
-            setTimeout(() => {
-                showTypingIndicator();
+        const msgEl = addAIMessage(createProcessingStagesHTML(files));
+        const stagesList = msgEl.querySelector('.processing-stages-list');
+        if (stagesList) {
+            animateProcessingStages(stagesList, () => {
+                // After all stages complete, show review hub
                 setTimeout(() => {
-                    removeTypingIndicator();
-                    addAIMessage(createContextCollectionUI());
-                    scrollChatToBottom();
-                }, 1200);
-            }, 800);
-        }, 2000);
-    }, 1500);
+                    removeLastMessage();
+                    addAIMessage(createReviewHub());
+                    showContextPanel();
+                    state.uploadState = 'complete';
+                    bindReviewHubButtons();
+                }, 500);
+            });
+        }
+    }, 600);
+}
+
+function showReportAttachments(files) {
+    const el = document.createElement('div');
+    el.className = 'report-attachments-row';
+    const chips = files.map(f => `
+        <div class="report-attachment-chip">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+            </svg>
+            <span>${f}</span>
+        </div>
+    `).join('');
+    el.innerHTML = `
+        <div class="report-attachments-label">Reports</div>
+        <div class="report-attachments-chips">${chips}</div>
+    `;
+    els.chatMessages.appendChild(el);
+    scrollChatToBottom();
+}
+
+function createProcessingStagesHTML(files) {
+    const count = files.length;
+    return `
+        <div class="processing-card">
+            <div class="processing-card-header">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+                Analyzing ${count} report${count > 1 ? 's' : ''}...
+            </div>
+            <div class="processing-stages-list" id="processingStagesList">
+                <div class="processing-stage-item" data-stage="1">
+                    <div class="processing-stage-dot"></div>
+                    <span class="processing-stage-text">Detecting report types</span>
+                </div>
+                <div class="processing-stage-item" data-stage="2">
+                    <div class="processing-stage-dot"></div>
+                    <span class="processing-stage-text">Extracting biomarkers</span>
+                </div>
+                <div class="processing-stage-item" data-stage="3">
+                    <div class="processing-stage-dot"></div>
+                    <span class="processing-stage-text">Identifying abnormalities</span>
+                </div>
+                <div class="processing-stage-item" data-stage="4">
+                    <div class="processing-stage-dot"></div>
+                    <span class="processing-stage-text">Preparing patient context</span>
+                </div>
+                <div class="processing-stage-item" data-stage="5">
+                    <div class="processing-stage-dot"></div>
+                    <span class="processing-stage-text">Generating clinical insights</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function animateProcessingStages(stagesListEl, callback) {
+    const items = stagesListEl.querySelectorAll('.processing-stage-item');
+    let current = 0;
+
+    function next() {
+        if (current >= items.length) {
+            setTimeout(() => { if (callback) callback(); }, 300);
+            return;
+        }
+
+        items[current].classList.add('active');
+        items[current].querySelector('.processing-stage-dot').innerHTML = `
+            <div style="width:6px;height:6px;border-radius:50%;background:white;"></div>
+        `;
+        scrollChatToBottom();
+
+        setTimeout(() => {
+            items[current].classList.remove('active');
+            items[current].classList.add('complete');
+            items[current].querySelector('.processing-stage-dot').innerHTML = `
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <polyline points="20,6 9,17 4,12"/>
+                </svg>
+            `;
+            current++;
+            setTimeout(next, 180);
+        }, 850);
+    }
+
+    setTimeout(next, 200);
+}
+
+// ============================================
+// RIGHT PANEL — REPORTS LIST
+// ============================================
+function updateRightPanelReports() {
+    els.contextEmpty.classList.add('hidden');
+    els.contextReports.classList.remove('hidden');
+
+    const docIconSVG = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14,2 14,8 20,8"/>
+        </svg>`;
+
+    els.contextReportsList.innerHTML = state.uploadedFiles.map((f, i) => `
+        <div class="context-report-item" style="animation-delay:${i * 0.07}s">
+            <div class="context-report-item-icon">${docIconSVG}</div>
+            <span class="context-report-item-name">${f}</span>
+        </div>
+    `).join('');
 }
 
 // ============================================
@@ -580,11 +832,12 @@ function createContextCollectionUI() {
 // ============================================
 function showContextPanel() {
     els.contextEmpty.classList.add('hidden');
+    els.contextReports.classList.add('hidden');
     els.contextData.classList.remove('hidden');
-
-    if (window.innerWidth <= 1200) {
-        els.contextPanel.classList.add('visible');
-    }
+    addBiomarkerCTAToPanel();
+    // On large screens the panel is always visible in the layout.
+    // On narrow screens, keep it closed so it doesn't cover the review hub;
+    // the doctor can open it manually via the toggle button.
 }
 
 // ============================================
@@ -1128,6 +1381,381 @@ document.addEventListener('click', (e) => {
         generateDietPlan();
     }
 });
+
+// ============================================
+// BIOMARKER DATA
+// ============================================
+const BIOMARKER_DATA = {
+    metabolic: {
+        label: 'Metabolic Health',
+        markers: [
+            { name: 'HbA1c', value: '8.2', unit: '%', normalRange: '4.0 – 5.6', status: 'high', position: 85, source: 'HbA1c_Report.pdf', page: 2, interpretation: 'Poor glucose control detected. Indicates uncontrolled Type 2 Diabetes.' },
+            { name: 'Fasting Blood Sugar', value: '168', unit: 'mg/dL', normalRange: '70 – 100', status: 'high', position: 80, source: 'CBC_Report.pdf', page: 3, interpretation: 'Significantly elevated. Immediate dietary intervention required.' },
+            { name: 'Post Prandial Sugar', value: '224', unit: 'mg/dL', normalRange: '< 140', status: 'high', position: 90, source: 'CBC_Report.pdf', page: 3 },
+            { name: 'Insulin', value: '18.4', unit: 'µIU/mL', normalRange: '2.6 – 24.9', status: 'normal', position: 55, source: 'CBC_Report.pdf', page: 4 }
+        ]
+    },
+    cardiovascular: {
+        label: 'Cardiovascular',
+        markers: [
+            { name: 'Total Cholesterol', value: '245', unit: 'mg/dL', normalRange: '< 200', status: 'high', position: 78, source: 'Lipid_Profile.pdf', page: 1 },
+            { name: 'LDL Cholesterol', value: '162', unit: 'mg/dL', normalRange: '< 100', status: 'high', position: 82, source: 'Lipid_Profile.pdf', page: 1, interpretation: 'High LDL increases cardiovascular risk. Reduce saturated fat intake.' },
+            { name: 'HDL Cholesterol', value: '38', unit: 'mg/dL', normalRange: '> 40', status: 'low', position: 22, source: 'Lipid_Profile.pdf', page: 1 },
+            { name: 'Triglycerides', value: '210', unit: 'mg/dL', normalRange: '< 150', status: 'high', position: 76, source: 'Lipid_Profile.pdf', page: 2 },
+            { name: 'Blood Pressure', value: '142/92', unit: 'mmHg', normalRange: '< 120/80', status: 'borderline', position: 68, source: 'CBC_Report.pdf', page: 1 }
+        ]
+    },
+    nutritional: {
+        label: 'Nutritional',
+        markers: [
+            { name: 'Vitamin D', value: '12', unit: 'ng/mL', normalRange: '30 – 100', status: 'low', position: 12, source: 'CBC_Report.pdf', page: 5, interpretation: 'Severe deficiency. Supplementation + sun exposure strongly recommended.' },
+            { name: 'Vitamin B12', value: '285', unit: 'pg/mL', normalRange: '200 – 900', status: 'normal', position: 40, source: 'CBC_Report.pdf', page: 5 },
+            { name: 'Iron (Serum)', value: '68', unit: 'µg/dL', normalRange: '60 – 170', status: 'normal', position: 47, source: 'CBC_Report.pdf', page: 5 }
+        ]
+    },
+    kidney: {
+        label: 'Kidney Function',
+        markers: [
+            { name: 'Creatinine', value: '1.1', unit: 'mg/dL', normalRange: '0.6 – 1.2', status: 'normal', position: 65, source: 'CBC_Report.pdf', page: 6 },
+            { name: 'BUN', value: '18', unit: 'mg/dL', normalRange: '7 – 25', status: 'normal', position: 50, source: 'CBC_Report.pdf', page: 6 }
+        ]
+    },
+    liver: {
+        label: 'Liver Function',
+        markers: [
+            { name: 'SGPT (ALT)', value: '42', unit: 'U/L', normalRange: '7 – 40', status: 'borderline', position: 63, source: 'CBC_Report.pdf', page: 7 },
+            { name: 'SGOT (AST)', value: '35', unit: 'U/L', normalRange: '10 – 40', status: 'normal', position: 54, source: 'CBC_Report.pdf', page: 7 }
+        ]
+    }
+};
+
+// ============================================
+// REVIEW HUB (post-processing landing)
+// ============================================
+function createReviewHub() {
+    const totalMarkers = Object.values(BIOMARKER_DATA).reduce((s, g) => s + g.markers.length, 0);
+    const abnormalMarkers = Object.values(BIOMARKER_DATA).reduce((s, g) => {
+        return s + g.markers.filter(m => m.status !== 'normal').length;
+    }, 0);
+
+    return `
+        <div class="review-hub">
+            <p class="review-hub-intro">Reports processed successfully. Review the extracted findings before generating the diet plan.</p>
+            <div class="review-hub-cards">
+                <div class="review-hub-card rh-biomarkers">
+                    <div class="rh-card-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5m4 0h4m6-11v11m0 0h-4m4 0H9"/>
+                        </svg>
+                    </div>
+                    <div class="rh-card-body">
+                        <div class="rh-card-title">Extracted Biomarkers</div>
+                        <div class="rh-card-meta">
+                            <span>${totalMarkers} detected</span>
+                            <span class="rh-badge rh-badge-abnormal">${abnormalMarkers} abnormal</span>
+                        </div>
+                    </div>
+                    <button class="rh-review-btn" id="openBiomarkersBtn">Review →</button>
+                </div>
+                <div class="review-hub-card rh-context">
+                    <div class="rh-card-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="rh-card-body">
+                        <div class="rh-card-title">Patient Context</div>
+                        <div class="rh-card-meta">
+                            <span>Conditions, preferences, goals</span>
+                        </div>
+                    </div>
+                    <button class="rh-review-btn" id="openContextReviewBtn">Review →</button>
+                </div>
+            </div>
+            <div class="ctx-review-section hidden" id="ctxReviewSection"></div>
+            <div class="rh-generate-row">
+                <p class="rh-generate-hint">Review findings above, then proceed to generate.</p>
+                <button class="rh-generate-btn" id="proceedGenerateBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                    </svg>
+                    Generate Diet Plan
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function bindReviewHubButtons() {
+    setTimeout(() => {
+        const openBmBtn = document.getElementById('openBiomarkersBtn');
+        const openCtxBtn = document.getElementById('openContextReviewBtn');
+        const proceedBtn = document.getElementById('proceedGenerateBtn');
+        if (openBmBtn) openBmBtn.addEventListener('click', openBiomarkerDrawer);
+        if (openCtxBtn) openCtxBtn.addEventListener('click', toggleContextReview);
+        if (proceedBtn) proceedBtn.addEventListener('click', proceedToGenerate);
+    }, 100);
+}
+
+function proceedToGenerate() {
+    addMessage('user', 'Proceed with generating the diet plan.');
+    showTypingIndicator();
+    setTimeout(() => {
+        removeTypingIndicator();
+        addAIMessage(createContextCollectionUI());
+        scrollChatToBottom();
+    }, 800);
+}
+
+// ============================================
+// BIOMARKER DRAWER
+// ============================================
+function openBiomarkerDrawer() {
+    const overlay = document.getElementById('bmDrawerOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            overlay.classList.add('bm-overlay-open');
+            overlay.querySelector('.bm-drawer').classList.add('bm-drawer-open');
+        });
+    });
+    // Reset to metabolic tab
+    document.querySelectorAll('.bm-group-tab').forEach(t => t.classList.remove('active'));
+    const firstTab = document.querySelector('.bm-group-tab[data-group="metabolic"]');
+    if (firstTab) firstTab.classList.add('active');
+    renderBiomarkerGroup('metabolic');
+    bindBiomarkerDrawerEvents();
+}
+
+function closeBiomarkerDrawer() {
+    const overlay = document.getElementById('bmDrawerOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('bm-overlay-open');
+    overlay.querySelector('.bm-drawer').classList.remove('bm-drawer-open');
+    setTimeout(() => overlay.classList.add('hidden'), 320);
+}
+
+function bindBiomarkerDrawerEvents() {
+    const closeBtn = document.getElementById('bmDrawerClose');
+    const overlay = document.getElementById('bmDrawerOverlay');
+    if (closeBtn) closeBtn.onclick = closeBiomarkerDrawer;
+    overlay.onclick = (e) => { if (e.target === overlay) closeBiomarkerDrawer(); };
+    document.querySelectorAll('.bm-group-tab').forEach(tab => {
+        tab.onclick = () => {
+            document.querySelectorAll('.bm-group-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            renderBiomarkerGroup(tab.dataset.group);
+        };
+    });
+}
+
+function renderBiomarkerGroup(groupKey) {
+    const body = document.getElementById('bmDrawerBody');
+    const group = BIOMARKER_DATA[groupKey];
+    if (!body || !group) return;
+    body.innerHTML = group.markers.map(m => createBiomarkerRow(m)).join('');
+}
+
+function createBiomarkerRow(marker) {
+    const statusLabels = {
+        high: 'High ↑', low: 'Low ↓', borderline: 'Borderline',
+        normal: 'Normal', critical: 'Critical ↑↑'
+    };
+    return `
+        <div class="bm-row">
+            <div class="bm-row-top">
+                <span class="bm-row-name">${marker.name}</span>
+                <span class="bm-status-badge bm-s-${marker.status}">${statusLabels[marker.status] || marker.status}</span>
+            </div>
+            <div class="bm-value-line">
+                <span class="bm-value bm-val-${marker.status}">${marker.value}<span class="bm-unit"> ${marker.unit}</span></span>
+                <span class="bm-normal-range">Normal: ${marker.normalRange} ${marker.unit}</span>
+            </div>
+            ${createRangeBar(marker.position, marker.status)}
+            <div class="bm-row-source">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                </svg>
+                ${marker.source} &bull; Page ${marker.page}
+            </div>
+            ${marker.interpretation ? `<div class="bm-row-interpretation">${marker.interpretation}</div>` : ''}
+        </div>
+    `;
+}
+
+function createRangeBar(position, status) {
+    return `
+        <div class="bm-range-wrap">
+            <div class="bm-range-bar">
+                <div class="bm-range-track">
+                    <div class="bm-rzone bm-rzone-low"></div>
+                    <div class="bm-rzone bm-rzone-normal"></div>
+                    <div class="bm-rzone bm-rzone-high"></div>
+                </div>
+                <div class="bm-range-dot bm-dot-${status}" style="left:calc(${position}% - 6px)"></div>
+            </div>
+            <div class="bm-range-labels"><span>Low</span><span>Normal</span><span>High</span></div>
+        </div>
+    `;
+}
+
+// ============================================
+// PATIENT CONTEXT REVIEW (expandable inline)
+// ============================================
+function toggleContextReview() {
+    const section = document.getElementById('ctxReviewSection');
+    const btn = document.getElementById('openContextReviewBtn');
+    if (!section) return;
+    if (section.classList.contains('hidden')) {
+        section.classList.remove('hidden');
+        section.innerHTML = createPatientContextReviewHTML();
+        if (btn) btn.textContent = 'Close ×';
+        bindContextReviewEvents();
+        scrollChatToBottom();
+    } else {
+        section.classList.add('hidden');
+        if (btn) btn.textContent = 'Review →';
+    }
+}
+
+function createPatientContextReviewHTML() {
+    return `
+        <div class="ctx-review-panel">
+            <div class="ctx-review-hdr">
+                <h4>Patient Context Review</h4>
+                <span class="ctx-review-sub">AI-detected — edit or approve before proceeding</span>
+            </div>
+            <div class="ctx-review-fields">
+                <div class="ctx-rfield">
+                    <div class="ctx-rfield-hdr">
+                        <span class="ctx-rlabel">Medical Conditions</span>
+                        <span class="ctx-ai-tag">AI Detected</span>
+                    </div>
+                    <div class="ctx-chips-wrap">
+                        <span class="ctx-ctag ctx-ctag-on">Diabetes <button class="ctx-ctag-rm">×</button></span>
+                        <span class="ctx-ctag ctx-ctag-on">Hypertension <button class="ctx-ctag-rm">×</button></span>
+                        <button class="ctx-chip-add">+ Add</button>
+                    </div>
+                </div>
+                <div class="ctx-rfield">
+                    <div class="ctx-rfield-hdr">
+                        <span class="ctx-rlabel">Diet Preference</span>
+                        <span class="ctx-ai-tag">AI Detected</span>
+                    </div>
+                    <div class="ctx-chips-wrap">
+                        <span class="ctx-ctag ctx-ctag-on">Vegetarian <button class="ctx-ctag-rm">×</button></span>
+                        <button class="ctx-chip-add">+ Add</button>
+                    </div>
+                </div>
+                <div class="ctx-rfield">
+                    <div class="ctx-rfield-hdr">
+                        <span class="ctx-rlabel">Allergies</span>
+                        <span class="ctx-ai-tag ctx-ai-none">None Detected</span>
+                    </div>
+                    <div class="ctx-chips-wrap">
+                        <span class="ctx-ctag ctx-ctag-dim">None</span>
+                        <button class="ctx-chip-add">+ Add</button>
+                    </div>
+                </div>
+                <div class="ctx-rfield">
+                    <div class="ctx-rfield-hdr">
+                        <span class="ctx-rlabel">Clinical Goals</span>
+                        <span class="ctx-ai-tag">AI Detected</span>
+                    </div>
+                    <div class="ctx-chips-wrap">
+                        <span class="ctx-ctag ctx-ctag-on">Sugar Control <button class="ctx-ctag-rm">×</button></span>
+                        <span class="ctx-ctag ctx-ctag-on">Heart Healthy <button class="ctx-ctag-rm">×</button></span>
+                        <span class="ctx-ctag ctx-ctag-on">Weight Loss <button class="ctx-ctag-rm">×</button></span>
+                        <button class="ctx-chip-add">+ Add</button>
+                    </div>
+                </div>
+                <div class="ctx-rfield">
+                    <div class="ctx-rfield-hdr">
+                        <span class="ctx-rlabel">Activity Level</span>
+                        <span class="ctx-ai-tag ctx-ai-none">Inferred</span>
+                    </div>
+                    <div class="ctx-act-row">
+                        <button class="ctx-act-opt" data-val="Sedentary">Sedentary</button>
+                        <button class="ctx-act-opt ctx-act-selected" data-val="Moderate">Moderate</button>
+                        <button class="ctx-act-opt" data-val="Active">Active</button>
+                    </div>
+                </div>
+                <div class="ctx-rfield">
+                    <div class="ctx-rfield-hdr">
+                        <span class="ctx-rlabel">Additional Notes</span>
+                    </div>
+                    <textarea class="ctx-notes-ta" id="ctxReviewNotes">No shellfish. Prefers simple home-cooked meals. Office-goer, limited lunch break.</textarea>
+                </div>
+            </div>
+            <div class="ctx-review-foot" id="ctxReviewFooter">
+                <button class="ctx-approve-btn" id="ctxApproveBtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20,6 9,17 4,12"/>
+                    </svg>
+                    Approve Context
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function bindContextReviewEvents() {
+    document.querySelectorAll('.ctx-ctag-rm').forEach(btn => {
+        btn.addEventListener('click', (e) => { e.stopPropagation(); e.target.closest('.ctx-ctag').remove(); });
+    });
+    document.querySelectorAll('.ctx-act-opt').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.ctx-act-opt').forEach(b => b.classList.remove('ctx-act-selected'));
+            btn.classList.add('ctx-act-selected');
+        });
+    });
+    const approveBtn = document.getElementById('ctxApproveBtn');
+    if (approveBtn) approveBtn.addEventListener('click', approvePatientContext);
+}
+
+function approvePatientContext() {
+    const footer = document.getElementById('ctxReviewFooter');
+    if (footer) {
+        footer.innerHTML = `
+            <div class="ctx-approved-row">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22,4 12,14.01 9,11.01"/>
+                </svg>
+                Patient context approved
+            </div>`;
+    }
+    const btn = document.querySelector('.rh-context .rh-review-btn');
+    if (btn) { btn.textContent = '✓ Approved'; btn.classList.add('rh-btn-approved'); }
+}
+
+// ============================================
+// RIGHT PANEL — BIOMARKER CTA
+// ============================================
+function addBiomarkerCTAToPanel() {
+    if (document.getElementById('panelBiomarkerCTA')) return;
+    const vitalsGrid = document.getElementById('vitalsGrid');
+    if (!vitalsGrid) return;
+    const abnormal = Object.values(BIOMARKER_DATA).reduce((s, g) => {
+        return s + g.markers.filter(m => m.status !== 'normal').length;
+    }, 0);
+    const ctaEl = document.createElement('div');
+    ctaEl.id = 'panelBiomarkerCTA';
+    ctaEl.className = 'panel-bm-cta';
+    ctaEl.innerHTML = `
+        <button class="panel-bm-btn" id="panelOpenBmBtn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5m4 0h4m6-11v11m0 0h-4m4 0H9"/>
+            </svg>
+            View All Biomarkers
+            <span class="panel-bm-abnormal">${abnormal} abnormal</span>
+        </button>`;
+    vitalsGrid.parentNode.insertBefore(ctaEl, vitalsGrid.nextSibling);
+    document.getElementById('panelOpenBmBtn').addEventListener('click', openBiomarkerDrawer);
+}
 
 // ============================================
 // INITIALIZE
