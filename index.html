@@ -8,8 +8,99 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .dashboard-transition {
+            position: fixed;
+            inset: 0;
+            background: #0a0b0f;
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 1;
+            pointer-events: all;
+            transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .dashboard-transition.done {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .dash-transition-content {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            animation: dtFadeIn 0.5s ease;
+        }
+        @keyframes dtFadeIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .dash-transition-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 18px;
+            color: #f0f1f3;
+        }
+        .dt-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            color: white;
+            border-radius: 10px;
+        }
+        .dash-transition-bar {
+            width: 200px;
+            height: 3px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .dash-transition-progress {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #2563eb, #7c3aed);
+            border-radius: 2px;
+            animation: dtProgress 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+        @keyframes dtProgress {
+            0% { width: 0%; }
+            40% { width: 60%; }
+            100% { width: 100%; }
+        }
+        .dash-transition-text {
+            font-size: 13px;
+            color: rgba(255,255,255,0.4);
+        }
+    </style>
 </head>
 <body>
+    <!-- PAGE TRANSITION OVERLAY -->
+    <div class="dashboard-transition" id="dashTransition">
+        <div class="dash-transition-content">
+            <div class="dash-transition-logo">
+                <div class="dt-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.2"/>
+                    </svg>
+                </div>
+                <span>NutriCopilot</span>
+            </div>
+            <div class="dash-transition-bar">
+                <div class="dash-transition-progress"></div>
+            </div>
+            <p class="dash-transition-text">Preparing your workspace...</p>
+        </div>
+    </div>
+
     <div class="app-container">
         <!-- LEFT SIDEBAR -->
         <aside class="sidebar" id="sidebar">
@@ -396,5 +487,17 @@
 
 
     <script src="script.js"></script>
+    <script>
+        // Dashboard entry: fade out the loading screen
+        window.addEventListener('DOMContentLoaded', () => {
+            const t = document.getElementById('dashTransition');
+            if (t) {
+                setTimeout(() => {
+                    t.classList.add('done');
+                    setTimeout(() => t.remove(), 700);
+                }, 1800);
+            }
+        });
+    </script>
 </body>
 </html>

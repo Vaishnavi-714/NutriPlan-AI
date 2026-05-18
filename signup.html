@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign up — NutriCopilot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="landing.css">
+</head>
+<body>
+    <!-- PAGE TRANSITION OVERLAY -->
+    <div class="page-transition" id="pageTransition"></div>
+
+    <div class="auth-page">
+        <!-- LEFT BRAND PANEL -->
+        <div class="auth-brand-panel">
+            <div class="auth-brand-content">
+                <a href="landing.html" class="nav-logo">
+                    <div class="nav-logo-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.2"/>
+                        </svg>
+                    </div>
+                    <span>NutriCopilot</span>
+                </a>
+
+                <h1>Start your <span>AI-powered</span> nutrition practice</h1>
+                <p>Join thousands of dietitians and doctors who've transformed their clinical workflow with NutriCopilot.</p>
+
+                <div class="auth-features">
+                    <div class="auth-feature">
+                        <div class="auth-feature-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
+                        </div>
+                        <span>Free for your first 50 patients</span>
+                    </div>
+                    <div class="auth-feature">
+                        <div class="auth-feature-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/></svg>
+                        </div>
+                        <span>Set up in under 2 minutes</span>
+                    </div>
+                    <div class="auth-feature">
+                        <div class="auth-feature-icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <span>No credit card required</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT AUTH FORM -->
+        <div class="auth-form-panel">
+            <div class="auth-card">
+                <a href="landing.html" class="nav-logo auth-mobile-logo">
+                    <div class="nav-logo-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
+                            <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.2"/>
+                        </svg>
+                    </div>
+                    <span>NutriCopilot</span>
+                </a>
+
+                <div class="auth-card-header">
+                    <h2>Create your account</h2>
+                    <p>Already have an account? <a href="login.html">Log in</a></p>
+                </div>
+
+                <form class="auth-form" id="signupForm" onsubmit="return false;">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" class="form-input" placeholder="Dr. Ananya Sharma" autocomplete="name" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="hospital">Hospital / Clinic</label>
+                            <input type="text" id="hospital" class="form-input" placeholder="Apollo Hospitals" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="specialization">Specialization</label>
+                            <select id="specialization" class="form-input" required>
+                                <option value="" disabled selected>Select</option>
+                                <option value="dietitian">Clinical Dietitian</option>
+                                <option value="nutritionist">Nutritionist</option>
+                                <option value="endocrinologist">Endocrinologist</option>
+                                <option value="general">General Physician</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" class="form-input" placeholder="doctor@hospital.com" autocomplete="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" class="form-input" placeholder="Create a strong password" autocomplete="new-password" required>
+                        <div class="password-strength">
+                            <div class="strength-bar" id="str1"></div>
+                            <div class="strength-bar" id="str2"></div>
+                            <div class="strength-bar" id="str3"></div>
+                            <div class="strength-bar" id="str4"></div>
+                        </div>
+                        <span class="strength-text" id="strengthText"></span>
+                    </div>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" required>
+                        I agree to the <a href="#" style="color:var(--accent-primary)">Terms of Service</a> and <a href="#" style="color:var(--accent-primary)">Privacy Policy</a>
+                    </label>
+
+                    <button type="submit" class="auth-submit-btn" id="signupBtn">Create Account</button>
+
+                    <div class="auth-divider">or sign up with</div>
+
+                    <div class="social-buttons">
+                        <button type="button" class="social-btn">
+                            <svg class="social-icon" viewBox="0 0 24 24">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                            </svg>
+                            Google
+                        </button>
+                        <button type="button" class="social-btn">
+                            <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M11.4 24H0V12.6L4.8 7.8V0H24v19.2l-4.8 4.8h-7.8zm1.2-1.2h6.6l4.2-4.2V1.2H6v6l-4.8 4.8v10.8h4.2v-6h1.2v6h6v-6h1.2v-1.2H7.2V18h-6v-4.8L6 8.4V1.2h16.8v16.8l-4.2 4.2h-6v-6h-1.2v6.6z"/>
+                            </svg>
+                            Microsoft
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="landing.js"></script>
+    <script src="auth.js"></script>
+</body>
+</html>
