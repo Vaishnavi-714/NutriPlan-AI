@@ -287,7 +287,8 @@ function simulateReportUpload(filename) {
                     showTypingIndicator();
                     setTimeout(() => {
                         removeTypingIndicator();
-                        addAIMessage(createContextCollectionUI());
+                        addAIMessage(createReviewHub());
+                        bindReviewHubButtons();
                         scrollChatToBottom();
                     }, 1200);
                 }, 800);
@@ -844,32 +845,36 @@ function showContextPanel() {
 // DIET PLAN GENERATION
 // ============================================
 function generateDietPlan() {
-    // Collect preferences
     collectPreferences();
+    state.planGenerated = false;
+    state.planApproved = false;
 
-    // Show workflow animation
-    showTypingIndicator();
+    const trigger = document.getElementById('proceedGenerateBtn') || document.getElementById('generatePlanBtn');
+    if (trigger) {
+        trigger.disabled = true;
+        trigger.classList.add('is-generating');
+        trigger.dataset.originalLabel = trigger.innerHTML;
+        trigger.innerHTML = `
+            <span class="btn-spinner"></span>
+            Generating Plan
+        `;
+    }
+
+    openDietPlanDrawer(true);
 
     setTimeout(() => {
-        removeTypingIndicator();
-        const workflowMsg = addAIMessage(createWorkflowSteps());
-
-        // Animate steps
-        const steps = workflowMsg.querySelectorAll('.workflow-step');
-        animateWorkflowSteps(steps, () => {
-            // After workflow, show diet plan
-            setTimeout(() => {
-                showTypingIndicator();
-                setTimeout(() => {
-                    removeTypingIndicator();
-                    addAIMessage(createDietPlanHTML());
-                    scrollChatToBottom();
-                    state.planGenerated = true;
-                    bindPlanActions();
-                }, 1000);
-            }, 500);
-        });
-    }, 800);
+        state.planGenerated = true;
+        const drawer = document.getElementById('dpDrawer');
+        if (drawer) {
+            renderDietPlanDrawer(drawer);
+            bindDietPlanDrawerEvents();
+        }
+        if (trigger) {
+            trigger.disabled = false;
+            trigger.classList.remove('is-generating');
+            trigger.innerHTML = trigger.dataset.originalLabel || 'Generate Diet Plan';
+        }
+    }, 1900);
 }
 
 function collectPreferences() {
@@ -1432,6 +1437,29 @@ const BIOMARKER_DATA = {
 // ============================================
 // REVIEW HUB (post-processing landing)
 // ============================================
+function getPatientContextSummary() {
+    return {
+        diet: ['Vegetarian'],
+        conditions: ['Diabetes', 'Hypertension'],
+        cuisine: ['Maharashtrian'],
+        goals: ['Sugar Control', 'Heart Healthy', 'Weight Loss'],
+        allergies: ['No Seafood'],
+        activity: 'Moderate',
+        notes: 'No shellfish. Prefers simple home-cooked meals. Office-goer, limited lunch break.'
+    };
+}
+
+function createContextSummaryChips(limit = 7) {
+    const context = getPatientContextSummary();
+    return [
+        ...context.diet,
+        ...context.conditions,
+        ...context.cuisine,
+        ...context.goals,
+        ...context.allergies
+    ].slice(0, limit).map(chip => `<span class="rh-ctx-chip">${chip}</span>`).join('');
+}
+
 function createReviewHub() {
     const totalMarkers = Object.values(BIOMARKER_DATA).reduce((s, g) => s + g.markers.length, 0);
     const abnormalMarkers = Object.values(BIOMARKER_DATA).reduce((s, g) => {
@@ -1466,16 +1494,16 @@ function createReviewHub() {
                     </div>
                     <div class="rh-card-body">
                         <div class="rh-card-title">Patient Context</div>
-                        <div class="rh-card-meta">
-                            <span>Conditions, preferences, goals</span>
+                        <div class="rh-ctx-chips-compact">
+                            ${createContextSummaryChips()}
                         </div>
                     </div>
-                    <button class="rh-review-btn" id="openContextReviewBtn">Review →</button>
+                    <button class="rh-review-btn" id="openContextReviewBtn">Edit →</button>
                 </div>
             </div>
             <div class="ctx-review-section hidden" id="ctxReviewSection"></div>
             <div class="rh-generate-row">
-                <p class="rh-generate-hint">Review findings above, then proceed to generate.</p>
+                <p class="rh-generate-hint">Context reviewed · Ready to generate.</p>
                 <button class="rh-generate-btn" id="proceedGenerateBtn">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
@@ -1499,13 +1527,7 @@ function bindReviewHubButtons() {
 }
 
 function proceedToGenerate() {
-    addMessage('user', 'Proceed with generating the diet plan.');
-    showTypingIndicator();
-    setTimeout(() => {
-        removeTypingIndicator();
-        addAIMessage(createContextCollectionUI());
-        scrollChatToBottom();
-    }, 800);
+    generateDietPlan();
 }
 
 // ============================================
@@ -1755,6 +1777,609 @@ function addBiomarkerCTAToPanel() {
         </button>`;
     vitalsGrid.parentNode.insertBefore(ctaEl, vitalsGrid.nextSibling);
     document.getElementById('panelOpenBmBtn').addEventListener('click', openBiomarkerDrawer);
+}
+
+// ============================================
+// DIET PLAN DATA
+// ============================================
+const DIET_PLAN_DATA = [
+    {
+        id: 'early-morning',
+        title: 'Early Morning',
+        time: '6:00 – 6:30 AM',
+        icon: '🌅',
+        iconBg: '#fef3c7',
+        items: [
+            'Warm water with lemon and methi seeds (soaked overnight)',
+            '5 almonds (soaked) + 2 walnuts'
+        ],
+        rationale: ['Hydration', 'Blood Sugar Regulation', 'Anti-inflammatory']
+    },
+    {
+        id: 'breakfast',
+        title: 'Breakfast',
+        time: '8:00 – 8:30 AM',
+        icon: '🍳',
+        iconBg: '#fef9c3',
+        items: [
+            'Moong dal chilla (2 pcs) with mint chutney',
+            '1 bowl vegetable upma (low oil, with oats)',
+            'Green tea or black coffee (no sugar)'
+        ],
+        rationale: ['High Protein', 'Low GI', 'Fiber Rich']
+    },
+    {
+        id: 'mid-morning',
+        title: 'Mid-Morning Snack',
+        time: '10:30 – 11:00 AM',
+        icon: '🍎',
+        iconBg: '#e0f2fe',
+        items: [
+            '1 small apple or guava (low GI fruit)',
+            'Handful of roasted chana (20g)'
+        ],
+        rationale: ['Low GI Fruit', 'Protein Snack', 'Sustained Energy']
+    },
+    {
+        id: 'lunch',
+        title: 'Lunch',
+        time: '1:00 – 1:30 PM',
+        icon: '🥗',
+        iconBg: '#dcfce7',
+        items: [
+            '1 small jowar/bajra roti + 1 multigrain roti',
+            '1 bowl dal (masoor/moong) – low salt',
+            'Lauki/tinda sabzi (low oil preparation)',
+            'Cucumber & tomato salad with lemon dressing',
+            '1 small bowl curd (low fat)'
+        ],
+        rationale: ['Reduced Sodium', 'Low GI Grains', 'High Fiber', 'Diabetes Friendly']
+    },
+    {
+        id: 'evening-snack',
+        title: 'Evening Snack',
+        time: '4:30 – 5:00 PM',
+        icon: '☕',
+        iconBg: '#fce7f3',
+        items: [
+            'Green tea (unsweetened)',
+            '1 multigrain khakhra or 2 flax crackers',
+            'Sprout salad with lemon (small bowl)'
+        ],
+        rationale: ['Antioxidant', 'Low Carb', 'Metabolism Support']
+    },
+    {
+        id: 'dinner',
+        title: 'Dinner',
+        time: '7:30 – 8:00 PM',
+        icon: '🌙',
+        iconBg: '#ede9fe',
+        items: [
+            '1 multigrain roti (small)',
+            'Palak/methi sabzi (low oil, no cream)',
+            '1 bowl mix veg soup (clear, no corn starch)',
+            'Small portion grilled paneer (50g)'
+        ],
+        rationale: ['Light Carb', 'Iron Rich', 'Heart Healthy', 'Low Calorie']
+    },
+    {
+        id: 'bedtime',
+        title: 'Bedtime',
+        time: '9:30 – 10:00 PM',
+        icon: '🌛',
+        iconBg: '#f5f3ff',
+        items: [
+            '1 glass warm turmeric milk (low fat, no sugar)',
+            'Isabgol 1 tsp in water (if needed for fiber)'
+        ],
+        rationale: ['Anti-inflammatory', 'Calcium', 'Digestive Health']
+    }
+];
+
+// ============================================
+// PLAN READY NOTIFICATION (in chat)
+// ============================================
+function createPlanReadyNotification() {
+    return `
+        <div class="plan-ready-notification">
+            <div class="prn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20,6 9,17 4,12"/>
+                </svg>
+            </div>
+            <div class="prn-text">
+                <span class="prn-title">Diet plan generated for Rajesh Sharma</span>
+                <span class="prn-sub">7 meal sections · Optimized for Diabetes &amp; Hypertension</span>
+            </div>
+            <button class="prn-open-btn" id="openDpDrawerBtn">Open Plan →</button>
+        </div>
+    `;
+}
+
+// ============================================
+// DIET PLAN DRAWER
+// ============================================
+function openDietPlanDrawer(isGenerating = false) {
+    const overlay = document.getElementById('dpDrawerOverlay');
+    if (!overlay) return;
+    const drawer = overlay.querySelector('.dp-drawer');
+    if (isGenerating) {
+        renderDietPlanLoading(drawer);
+    } else {
+        renderDietPlanDrawer(drawer);
+    }
+    overlay.classList.remove('hidden');
+    requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+            overlay.classList.add('dp-overlay-open');
+            drawer.classList.add('dp-drawer-open');
+        });
+    });
+    if (isGenerating) {
+        bindDietPlanLoadingEvents();
+    } else {
+        bindDietPlanDrawerEvents();
+    }
+}
+
+function closeDietPlanDrawer() {
+    const overlay = document.getElementById('dpDrawerOverlay');
+    if (!overlay) return;
+    overlay.classList.remove('dp-overlay-open');
+    overlay.querySelector('.dp-drawer').classList.remove('dp-drawer-open');
+    setTimeout(() => overlay.classList.add('hidden'), 320);
+}
+
+function renderDietPlanDrawer(drawer) {
+    const now = new Date().toLocaleString('en-IN', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
+    const approveLabel = state.planApproved ? 'Plan Approved' : 'Approve Plan';
+    const approveClass = state.planApproved ? ' dp-btn-approved' : '';
+    const approveDisabled = state.planApproved ? ' disabled' : '';
+
+    drawer.innerHTML = `
+        <div class="dp-drawer-header">
+            <div class="dp-header-top">
+                <div class="dp-title-block">
+                    <div class="dp-badge-row">
+                        <span class="dp-ai-badge">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                            AI Generated
+                        </span>
+                        <span class="dp-edit-badge">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            Doctor Editable
+                        </span>
+                    </div>
+                    <h2 class="dp-main-title">AI Generated Diet Plan</h2>
+                    <div class="dp-patient-info">
+                        <span class="dp-patient-name">Rajesh Sharma</span>
+                        <span class="dp-patient-meta">Male · 52 yrs · BMI 28.4</span>
+                    </div>
+                </div>
+                <button class="dp-close-btn" id="dpDrawerClose">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="dp-tags-row">
+                <span class="dp-risk-tag dp-risk-critical">High Risk</span>
+                <span class="dp-risk-tag dp-risk-diabetes">Diabetic</span>
+                <span class="dp-ctx-chip">Vegetarian</span>
+                <span class="dp-ctx-chip">Sugar Control</span>
+                <span class="dp-ctx-chip">Low Sodium</span>
+                <span class="dp-ctx-chip">Hypertension</span>
+            </div>
+            <div class="dp-header-meta">
+                <span class="dp-timestamp">Generated ${now}</span>
+            </div>
+            <div class="dp-header-actions">
+                <button class="dp-action-btn dp-btn-regen" id="dpRegenBtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Regenerate
+                </button>
+                <button class="dp-action-btn dp-btn-export" id="dpExportBtn">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Export PDF
+                </button>
+                <button class="dp-action-btn dp-btn-approve${approveClass}" id="dpApproveBtn"${approveDisabled}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+                    ${approveLabel}
+                </button>
+            </div>
+        </div>
+        <div class="dp-drawer-body" id="dpDrawerBody">
+            ${buildAccordionHTML()}
+        </div>
+    `;
+}
+
+function getDietPlanSections() {
+    return [
+        {
+            id: 'morning',
+            title: 'Morning',
+            time: '7:30 - 8:30 AM',
+            icon: 'AM',
+            iconBg: '#fef3c7',
+            items: [
+                'Moong dal chilla (2 pcs) with mint chutney',
+                '1 bowl vegetable upma (low oil, with oats)',
+                'Green tea or black coffee (no sugar)'
+            ],
+            rationale: ['High Protein', 'Low GI', 'Diabetes Friendly', 'Fiber Rich']
+        },
+        {
+            id: 'mid-morning',
+            title: 'Mid Morning',
+            time: '10:30 - 11:00 AM',
+            icon: 'MM',
+            iconBg: '#e0f2fe',
+            items: [
+                '1 small apple or guava (low GI fruit)',
+                'Handful of roasted chana (20g)'
+            ],
+            rationale: ['Low GI Fruit', 'Protein Snack', 'Sustained Energy']
+        },
+        {
+            id: 'lunch',
+            title: 'Lunch',
+            time: '1:00 - 1:30 PM',
+            icon: 'LN',
+            iconBg: '#dcfce7',
+            items: [
+                '1 small jowar/bajra roti + 1 multigrain roti',
+                '1 bowl dal (masoor/moong) - low salt',
+                'Lauki/tinda sabzi (low oil preparation)',
+                'Cucumber and tomato salad with lemon dressing',
+                '1 small bowl curd (low fat)'
+            ],
+            rationale: ['Reduced Sodium', 'Low GI Grains', 'High Fiber', 'Diabetes Friendly']
+        },
+        {
+            id: 'evening-snack',
+            title: 'Evening Snack',
+            time: '4:30 - 5:00 PM',
+            icon: 'ES',
+            iconBg: '#fce7f3',
+            items: [
+                'Green tea (unsweetened)',
+                '1 multigrain khakhra or 2 flax crackers',
+                'Sprout salad with lemon (small bowl)'
+            ],
+            rationale: ['Antioxidant', 'Low Carb', 'Metabolism Support']
+        },
+        {
+            id: 'dinner',
+            title: 'Dinner',
+            time: '7:30 - 8:00 PM',
+            icon: 'DN',
+            iconBg: '#ede9fe',
+            items: [
+                '1 multigrain roti (small)',
+                'Palak/methi sabzi (low oil, no cream)',
+                '1 bowl mix veg soup (clear, no corn starch)',
+                'Small portion grilled paneer (50g)'
+            ],
+            rationale: ['Light Carb', 'Iron Rich', 'Heart Healthy', 'Low Calorie']
+        },
+        {
+            id: 'bedtime',
+            title: 'Bedtime',
+            time: '9:30 - 10:00 PM',
+            icon: 'BT',
+            iconBg: '#f5f3ff',
+            items: [
+                '1 glass warm turmeric milk (low fat, no sugar)',
+                'Isabgol 1 tsp in water (if needed for fiber)'
+            ],
+            rationale: ['Anti-inflammatory', 'Calcium', 'Digestive Health']
+        }
+    ];
+}
+
+function renderDietPlanLoading(drawer) {
+    drawer.innerHTML = `
+        <div class="dp-drawer-header dp-loading-header">
+            <div class="dp-header-top">
+                <div class="dp-title-block">
+                    <div class="dp-badge-row">
+                        <span class="dp-ai-badge">AI Generated</span>
+                        <span class="dp-edit-badge">Doctor Editable</span>
+                    </div>
+                    <h2 class="dp-main-title">AI Generated Diet Plan</h2>
+                    <div class="dp-patient-info">
+                        <span class="dp-patient-name">Rajesh Sharma</span>
+                        <span class="dp-patient-meta">Generating clinical review workspace</span>
+                    </div>
+                </div>
+                <button class="dp-close-btn" id="dpDrawerClose">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="dp-drawer-body dp-loading-body">
+            <div class="dp-generation-card">
+                <div class="dp-generation-title">Generating personalized diet plan...</div>
+                <div class="dp-generation-steps">
+                    <div class="dp-gen-step active"><span></span>Diabetes-safe meals</div>
+                    <div class="dp-gen-step active"><span></span>Glycemic optimization</div>
+                    <div class="dp-gen-step active"><span></span>Regional cuisine adaptation</div>
+                    <div class="dp-gen-step active"><span></span>Sodium reduction balancing</div>
+                </div>
+            </div>
+            <div class="dp-skeleton-acc">
+                ${Array.from({ length: 6 }).map((_, index) => `
+                    <div class="dp-skeleton-row" style="animation-delay:${index * 0.08}s">
+                        <div class="dp-skel-icon shimmer"></div>
+                        <div class="dp-skel-lines">
+                            <div class="dp-skel-line shimmer"></div>
+                            <div class="dp-skel-line short shimmer"></div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function bindDietPlanLoadingEvents() {
+    document.getElementById('dpDrawerClose')?.addEventListener('click', closeDietPlanDrawer);
+    const overlay = document.getElementById('dpDrawerOverlay');
+    if (overlay) {
+        overlay.onclick = (e) => { if (e.target === overlay) closeDietPlanDrawer(); };
+    }
+}
+
+function buildAccordionHTML() {
+    return getDietPlanSections().map((meal, index) => buildAccordionItem(meal, index === 0)).join('');
+}
+
+function buildAccordionItem(meal, expanded) {
+    const checkSVG = `<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>`;
+    const editSVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+    const delSVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>`;
+    const regenSVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`;
+    const addSVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>`;
+
+    const itemsHTML = meal.items.map(item => `
+        <li class="dp-meal-li">
+            <span class="dp-item-dot"></span>
+            <span class="dp-item-text">${item}</span>
+            <div class="dp-item-btns">
+                <button class="dp-item-btn dp-edit-btn" title="Edit item">${editSVG}</button>
+                <button class="dp-item-btn dp-del-btn" title="Remove item">${delSVG}</button>
+            </div>
+        </li>
+    `).join('');
+
+    const rationaleHTML = meal.rationale.map(tag => `
+        <span class="dp-rat-tag">${checkSVG} ${tag}</span>
+    `).join('');
+
+    return `
+        <div class="dp-acc-item ${expanded ? 'dp-acc-expanded' : ''}" data-meal-id="${meal.id}">
+            <div class="dp-acc-header">
+                <div class="dp-acc-meal-icon" style="background:${meal.iconBg};">${meal.icon}</div>
+                <div class="dp-acc-info">
+                    <span class="dp-acc-title">${meal.title}</span>
+                    <span class="dp-acc-time">${meal.time}</span>
+                </div>
+                <div class="dp-acc-right">
+                    <span class="dp-acc-count">${meal.items.length} item${meal.items.length !== 1 ? 's' : ''}</span>
+                    <svg class="dp-acc-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6,9 12,15 18,9"/></svg>
+                </div>
+            </div>
+            <div class="dp-acc-body">
+                <ul class="dp-meal-items" id="dp-items-${meal.id}">
+                    ${itemsHTML}
+                </ul>
+                <div class="dp-acc-actions">
+                    <button class="dp-add-item-btn" data-meal="${meal.id}">${addSVG} Add Item</button>
+                    <button class="dp-regen-section-btn" data-meal="${meal.id}">${regenSVG} Regenerate ${meal.title}</button>
+                </div>
+                <div class="dp-rationale">
+                    <span class="dp-rat-label">Optimized For:</span>
+                    ${rationaleHTML}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function bindDietPlanDrawerEvents() {
+    setTimeout(() => {
+        // Close button & overlay backdrop
+        document.getElementById('dpDrawerClose')?.addEventListener('click', closeDietPlanDrawer);
+        const overlay = document.getElementById('dpDrawerOverlay');
+        if (overlay) {
+            overlay.onclick = (e) => { if (e.target === overlay) closeDietPlanDrawer(); };
+        }
+
+        // Accordion header toggle
+        document.querySelectorAll('.dp-acc-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const item = header.closest('.dp-acc-item');
+                if (item) item.classList.toggle('dp-acc-expanded');
+            });
+        });
+
+        // Edit buttons — toggle contenteditable inline
+        document.querySelectorAll('#dpDrawer .dp-edit-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const textEl = btn.closest('.dp-meal-li')?.querySelector('.dp-item-text');
+                if (!textEl) return;
+                const isEditing = textEl.contentEditable === 'true';
+                textEl.contentEditable = isEditing ? 'false' : 'true';
+                textEl.classList.toggle('dp-editing', !isEditing);
+                btn.classList.toggle('dp-btn-active', !isEditing);
+                if (!isEditing) {
+                    textEl.focus();
+                    const range = document.createRange();
+                    range.selectNodeContents(textEl);
+                    range.collapse(false);
+                    const sel = window.getSelection();
+                    sel.removeAllRanges();
+                    sel.addRange(range);
+                }
+            });
+        });
+
+        // Delete buttons
+        document.querySelectorAll('#dpDrawer .dp-del-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const li = btn.closest('.dp-meal-li');
+                if (!li) return;
+                li.style.cssText = 'opacity:0;transform:translateX(12px);transition:all 0.2s ease;';
+                setTimeout(() => {
+                    li.remove();
+                    updateAccordionCount(btn.closest('.dp-acc-item'));
+                }, 200);
+            });
+        });
+
+        // Add item buttons
+        document.querySelectorAll('.dp-add-item-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const mealId = btn.dataset.meal;
+                const list = document.getElementById(`dp-items-${mealId}`);
+                if (!list) return;
+                const editSVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+                const delSVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>`;
+                const li = document.createElement('li');
+                li.className = 'dp-meal-li dp-item-new';
+                li.innerHTML = `
+                    <span class="dp-item-dot"></span>
+                    <span class="dp-item-text dp-editing" contenteditable="true">New item</span>
+                    <div class="dp-item-btns" style="opacity:1;">
+                        <button class="dp-item-btn dp-edit-btn dp-btn-active" title="Edit item">${editSVG}</button>
+                        <button class="dp-item-btn dp-del-btn" title="Remove item">${delSVG}</button>
+                    </div>
+                `;
+                list.appendChild(li);
+                const textEl = li.querySelector('.dp-item-text');
+                textEl.focus();
+                document.execCommand('selectAll');
+
+                // Bind new item's buttons
+                li.querySelector('.dp-edit-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isEditing = textEl.contentEditable === 'true';
+                    textEl.contentEditable = isEditing ? 'false' : 'true';
+                    textEl.classList.toggle('dp-editing', !isEditing);
+                    li.querySelector('.dp-edit-btn').classList.toggle('dp-btn-active', !isEditing);
+                    if (!isEditing) textEl.focus();
+                });
+                li.querySelector('.dp-del-btn').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    li.style.cssText = 'opacity:0;transform:translateX(12px);transition:all 0.2s ease;';
+                    setTimeout(() => {
+                        li.remove();
+                        updateAccordionCount(btn.closest('.dp-acc-item'));
+                    }, 200);
+                });
+                textEl.addEventListener('blur', () => {
+                    if (!textEl.textContent.trim()) {
+                        li.remove();
+                    } else {
+                        textEl.contentEditable = 'false';
+                        textEl.classList.remove('dp-editing');
+                        li.querySelector('.dp-edit-btn')?.classList.remove('dp-btn-active');
+                    }
+                    updateAccordionCount(btn.closest('.dp-acc-item'));
+                });
+                updateAccordionCount(btn.closest('.dp-acc-item'));
+            });
+        });
+
+        // Regenerate section buttons
+        document.querySelectorAll('.dp-regen-section-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const mealId = btn.dataset.meal;
+                const list = document.getElementById(`dp-items-${mealId}`);
+                if (!list) return;
+                list.style.opacity = '0.35';
+                btn.disabled = true;
+                const originalHTML = btn.innerHTML;
+                btn.textContent = 'Regenerating...';
+                setTimeout(() => {
+                    list.style.opacity = '1';
+                    btn.disabled = false;
+                    btn.innerHTML = originalHTML;
+                }, 1500);
+            });
+        });
+
+        // Approve Plan
+        document.getElementById('dpApproveBtn')?.addEventListener('click', approveDietPlan);
+
+        // Export PDF
+        document.getElementById('dpExportBtn')?.addEventListener('click', exportDietPlan);
+
+        // Regenerate full plan
+        document.getElementById('dpRegenBtn')?.addEventListener('click', () => {
+            const drawer = document.getElementById('dpDrawer');
+            if (!drawer) return;
+            renderDietPlanLoading(drawer);
+            bindDietPlanLoadingEvents();
+            setTimeout(() => {
+                renderDietPlanDrawer(drawer);
+                bindDietPlanDrawerEvents();
+            }, 1600);
+        });
+    }, 100);
+}
+
+function updateAccordionCount(accItem) {
+    if (!accItem) return;
+    const n = accItem.querySelectorAll('.dp-meal-li').length;
+    const countEl = accItem.querySelector('.dp-acc-count');
+    if (countEl) countEl.textContent = `${n} item${n !== 1 ? 's' : ''}`;
+}
+
+function approveDietPlan() {
+    const btn = document.getElementById('dpApproveBtn');
+    if (!btn) return;
+    if (state.planApproved) return;
+    state.planApproved = true;
+    btn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+        Plan Approved
+    `;
+    btn.classList.add('dp-btn-approved');
+    btn.disabled = true;
+
+    const approvedDiv = document.createElement('div');
+    approvedDiv.className = 'plan-approved';
+    approvedDiv.innerHTML = `
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22,4 12,14.01 9,11.01"/>
+        </svg>
+        <span>Diet plan approved by Dr. Sharma · ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+    `;
+    els.chatMessages.appendChild(approvedDiv);
+    scrollChatToBottom();
+}
+
+function exportDietPlan() {
+    const btn = document.getElementById('dpExportBtn');
+    if (!btn) return;
+    const original = btn.innerHTML;
+    btn.innerHTML = `
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>
+        Downloaded!
+    `;
+    btn.classList.add('dp-btn-exported');
+    setTimeout(() => {
+        btn.innerHTML = original;
+        btn.classList.remove('dp-btn-exported');
+    }, 2500);
 }
 
 // ============================================

@@ -2092,6 +2092,22 @@ textarea {
     box-shadow: var(--shadow-md), var(--shadow-glow);
 }
 
+.rh-generate-btn:disabled,
+.generate-plan-btn:disabled {
+    opacity: 0.75;
+    cursor: wait;
+    transform: none;
+}
+
+.btn-spinner {
+    width: 13px;
+    height: 13px;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+}
+
 /* ============================================
    BIOMARKER DRAWER OVERLAY
    ============================================ */
@@ -2699,6 +2715,794 @@ textarea {
 
     .rh-generate-btn {
         width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================
+   REVIEW HUB — COMPACT CONTEXT CHIPS
+   ============================================ */
+.rh-ctx-chips-compact {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    margin-top: var(--space-xs);
+}
+
+.rh-ctx-chip {
+    padding: 2px var(--space-sm);
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.rh-ctx-condition {
+    background: var(--warning-light);
+    color: var(--warning);
+}
+
+.rh-ctx-pref {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+.rh-ctx-goal {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+/* ============================================
+   PLAN READY NOTIFICATION (in chat)
+   ============================================ */
+.plan-ready-notification {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg) var(--space-xl);
+    background: var(--success-light);
+    border: 1px solid rgba(16, 185, 129, 0.18);
+    border-radius: var(--radius-xl);
+    animation: fadeInUp 0.3s ease;
+}
+
+.prn-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: var(--radius-full);
+    background: var(--success);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.prn-text {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.prn-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.prn-sub {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+}
+
+.prn-open-btn {
+    padding: var(--space-sm) var(--space-lg);
+    background: var(--success);
+    color: white;
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-family: var(--font-family);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.prn-open-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* ============================================
+   DIET PLAN DRAWER
+   ============================================ */
+.dp-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.18);
+    z-index: 500;
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity var(--transition-smooth);
+    pointer-events: none;
+}
+
+.dp-drawer-overlay:not(.hidden) {
+    pointer-events: auto;
+}
+
+.dp-overlay-open {
+    opacity: 1;
+}
+
+.dp-drawer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 560px;
+    max-width: 96vw;
+    background: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform var(--transition-smooth);
+    box-shadow: -4px 0 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.dp-drawer-open {
+    transform: translateX(0);
+}
+
+/* --- Drawer Header --- */
+.dp-drawer-header {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--bg-tertiary);
+    padding: var(--space-xl) var(--space-2xl) var(--space-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    background: var(--bg-secondary);
+}
+
+.dp-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-md);
+}
+
+.dp-title-block {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+
+.dp-badge-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: 2px;
+}
+
+.dp-ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px var(--space-sm);
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.dp-edit-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px var(--space-sm);
+    background: var(--success-light);
+    color: var(--success);
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+}
+
+.dp-main-title {
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+}
+
+.dp-patient-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.dp-patient-name {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.dp-patient-meta {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+}
+
+.dp-close-btn {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: var(--text-tertiary);
+    transition: all var(--transition-fast);
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-top: 2px;
+}
+
+.dp-close-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+/* Tags row */
+.dp-tags-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.dp-risk-tag {
+    padding: 3px var(--space-sm);
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.dp-risk-critical {
+    background: var(--error-light);
+    color: var(--error);
+}
+
+.dp-risk-diabetes {
+    background: var(--warning-light);
+    color: var(--warning);
+}
+
+.dp-ctx-chip {
+    padding: 3px var(--space-sm);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--bg-active);
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Header meta & actions */
+.dp-header-meta {
+    display: flex;
+    align-items: center;
+}
+
+.dp-timestamp {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+}
+
+.dp-header-actions {
+    display: flex;
+    gap: var(--space-sm);
+    flex-wrap: wrap;
+}
+
+.dp-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-lg);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    font-family: var(--font-family);
+}
+
+.dp-btn-regen {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.dp-btn-regen:hover {
+    background: var(--bg-active);
+    color: var(--text-primary);
+}
+
+.dp-btn-export {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+.dp-btn-export:hover {
+    background: var(--bg-active);
+    color: var(--text-primary);
+}
+
+.dp-btn-approve {
+    background: var(--success);
+    color: white;
+    box-shadow: var(--shadow-sm);
+}
+
+.dp-btn-approve:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.dp-btn-approve:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.dp-btn-approved {
+    background: var(--success-light) !important;
+    color: var(--success) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+    cursor: default !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.dp-btn-exported {
+    background: var(--success) !important;
+    color: white !important;
+}
+
+/* --- Drawer Body --- */
+.dp-drawer-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: var(--space-sm) 0 var(--space-2xl);
+    scrollbar-width: thin;
+}
+
+.dp-drawer-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.dp-drawer-body::-webkit-scrollbar-thumb {
+    background: var(--bg-active);
+    border-radius: var(--radius-full);
+}
+
+.dp-loading-body {
+    padding: var(--space-xl) var(--space-2xl) var(--space-2xl);
+}
+
+.dp-generation-card {
+    padding: var(--space-xl);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--bg-active);
+    border-radius: var(--radius-xl);
+    margin-bottom: var(--space-lg);
+}
+
+.dp-generation-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--space-md);
+}
+
+.dp-generation-steps {
+    display: grid;
+    gap: var(--space-sm);
+}
+
+.dp-gen-step {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+}
+
+.dp-gen-step span {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--success-light);
+    border: 1px solid rgba(16, 185, 129, 0.22);
+    position: relative;
+    flex-shrink: 0;
+}
+
+.dp-gen-step span::after {
+    content: "";
+    position: absolute;
+    left: 5px;
+    top: 3px;
+    width: 4px;
+    height: 7px;
+    border: solid var(--success);
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+.dp-skeleton-acc {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.dp-skeleton-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border: 1px solid var(--bg-tertiary);
+    border-radius: var(--radius-xl);
+    background: var(--bg-secondary);
+    animation: fadeInUp 0.25s ease both;
+}
+
+.dp-skel-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: var(--radius-md);
+    flex-shrink: 0;
+}
+
+.dp-skel-lines {
+    flex: 1;
+    display: grid;
+    gap: var(--space-sm);
+}
+
+.dp-skel-line {
+    height: 10px;
+    border-radius: var(--radius-full);
+    width: 70%;
+}
+
+.dp-skel-line.short {
+    width: 38%;
+}
+
+/* --- Accordion Items --- */
+.dp-acc-item {
+    border-bottom: 1px solid var(--bg-tertiary);
+}
+
+.dp-acc-item:last-child {
+    border-bottom: none;
+}
+
+.dp-acc-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg) var(--space-2xl);
+    cursor: pointer;
+    user-select: none;
+    transition: background var(--transition-fast);
+    min-height: 60px;
+}
+
+.dp-acc-header:hover {
+    background: var(--bg-hover);
+}
+
+.dp-acc-expanded > .dp-acc-header {
+    background: var(--bg-tertiary);
+}
+
+.dp-acc-meal-icon {
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 0;
+    flex-shrink: 0;
+}
+
+.dp-acc-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dp-acc-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.dp-acc-time {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+}
+
+.dp-acc-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+}
+
+.dp-acc-count {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    font-weight: 500;
+}
+
+.dp-acc-chevron {
+    color: var(--text-tertiary);
+    transition: transform var(--transition-base);
+    flex-shrink: 0;
+}
+
+.dp-acc-expanded > .dp-acc-header .dp-acc-chevron {
+    transform: rotate(180deg);
+}
+
+/* --- Accordion Body --- */
+.dp-acc-body {
+    display: flex;
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height var(--transition-smooth), opacity var(--transition-base), padding var(--transition-base);
+    flex-direction: column;
+    gap: var(--space-lg);
+    padding: 0 var(--space-2xl);
+}
+
+.dp-acc-expanded > .dp-acc-body {
+    max-height: 720px;
+    opacity: 1;
+    padding: var(--space-xs) var(--space-2xl) var(--space-xl);
+}
+
+/* --- Meal Items List --- */
+.dp-meal-items {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.dp-meal-li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.dp-meal-li:hover {
+    background: var(--bg-hover);
+}
+
+.dp-meal-li:hover .dp-item-btns {
+    opacity: 1;
+}
+
+.dp-item-dot {
+    width: 5px;
+    height: 5px;
+    min-width: 5px;
+    border-radius: 50%;
+    background: var(--accent-primary);
+    opacity: 0.4;
+    flex-shrink: 0;
+}
+
+.dp-item-text {
+    flex: 1;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    outline: none;
+    border-radius: var(--radius-sm);
+    padding: 2px 4px;
+    min-width: 0;
+    transition: all var(--transition-fast);
+}
+
+.dp-item-text.dp-editing {
+    background: var(--accent-primary-light);
+    color: var(--text-primary);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.dp-item-btns {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    flex-shrink: 0;
+}
+
+.dp-item-btn {
+    width: 26px;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--text-tertiary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.dp-item-btn:hover {
+    background: var(--bg-active);
+    color: var(--text-primary);
+}
+
+.dp-edit-btn.dp-btn-active {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.dp-del-btn:hover {
+    background: var(--error-light);
+    color: var(--error);
+}
+
+/* --- Accordion Footer Actions --- */
+.dp-acc-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.dp-add-item-btn,
+.dp-regen-section-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-md);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: none;
+    font-family: var(--font-family);
+}
+
+.dp-add-item-btn {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+    border: 1px solid rgba(37, 99, 235, 0.12);
+}
+
+.dp-add-item-btn:hover {
+    background: rgba(37, 99, 235, 0.12);
+}
+
+.dp-regen-section-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border: 1px solid var(--bg-active);
+}
+
+.dp-regen-section-btn:hover {
+    background: var(--bg-active);
+    color: var(--text-primary);
+}
+
+.dp-regen-section-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+/* --- AI Rationale Tags --- */
+.dp-rationale {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    padding-top: var(--space-sm);
+    border-top: 1px dashed var(--bg-active);
+}
+
+.dp-rat-label {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.dp-rat-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px var(--space-sm);
+    background: var(--success-light);
+    color: var(--success);
+    border-radius: var(--radius-full);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+}
+
+.dp-rat-tag svg {
+    color: var(--success);
+    flex-shrink: 0;
+}
+
+/* New item entry animation */
+.dp-item-new {
+    animation: fadeInUp 0.2s ease;
+}
+
+/* ============================================
+   DIET PLAN DRAWER — RESPONSIVE
+   ============================================ */
+@media (max-width: 640px) {
+    .dp-drawer {
+        width: 100%;
+        max-width: 100%;
+        top: 0;
+        bottom: 0;
+        height: 100dvh;
+        transform: translateY(100%);
+        border-radius: 0;
+        box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .dp-drawer-open {
+        transform: translateY(0);
+    }
+
+    .dp-header-actions {
+        flex-wrap: wrap;
+    }
+
+    .dp-action-btn {
+        flex: 1;
         justify-content: center;
     }
 }
