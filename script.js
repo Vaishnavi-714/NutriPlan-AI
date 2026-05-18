@@ -2078,6 +2078,7 @@ function renderDietPlanDrawer(drawer) {
             </div>
         </div>
         <div class="dp-drawer-body" id="dpDrawerBody">
+            ${buildNutritionSummaryHTML()}
             ${buildAccordionHTML()}
         </div>
     `;
@@ -2091,10 +2092,12 @@ function getDietPlanSections() {
             time: '7:30 - 8:30 AM',
             icon: 'AM',
             iconBg: '#fef3c7',
+            kcal: 420,
+            macros: { protein: 28, carbs: 42, fat: 12, fiber: 8 },
             items: [
-                'Moong dal chilla (2 pcs) with mint chutney',
-                '1 bowl vegetable upma (low oil, with oats)',
-                'Green tea or black coffee (no sugar)'
+                { text: 'Moong dal chilla (2 pcs) with mint chutney', kcal: 220 },
+                { text: '1 bowl vegetable upma (low oil, with oats)', kcal: 195 },
+                { text: 'Green tea or black coffee (no sugar)', kcal: 5 }
             ],
             rationale: ['High Protein', 'Low GI', 'Diabetes Friendly', 'Fiber Rich']
         },
@@ -2104,9 +2107,11 @@ function getDietPlanSections() {
             time: '10:30 - 11:00 AM',
             icon: 'MM',
             iconBg: '#e0f2fe',
+            kcal: 145,
+            macros: { protein: 6, carbs: 18, fat: 4, fiber: 3 },
             items: [
-                '1 small apple or guava (low GI fruit)',
-                'Handful of roasted chana (20g)'
+                { text: '1 small apple or guava (low GI fruit)', kcal: 65 },
+                { text: 'Handful of roasted chana (20g)', kcal: 80 }
             ],
             rationale: ['Low GI Fruit', 'Protein Snack', 'Sustained Energy']
         },
@@ -2116,12 +2121,14 @@ function getDietPlanSections() {
             time: '1:00 - 1:30 PM',
             icon: 'LN',
             iconBg: '#dcfce7',
+            kcal: 505,
+            macros: { protein: 24, carbs: 62, fat: 14, fiber: 10 },
             items: [
-                '1 small jowar/bajra roti + 1 multigrain roti',
-                '1 bowl dal (masoor/moong) - low salt',
-                'Lauki/tinda sabzi (low oil preparation)',
-                'Cucumber and tomato salad with lemon dressing',
-                '1 small bowl curd (low fat)'
+                { text: '1 small jowar/bajra roti + 1 multigrain roti', kcal: 150 },
+                { text: '1 bowl dal (masoor/moong) - low salt', kcal: 120 },
+                { text: 'Lauki/tinda sabzi (low oil preparation)', kcal: 70 },
+                { text: 'Cucumber and tomato salad with lemon dressing', kcal: 35 },
+                { text: '1 small bowl curd (low fat)', kcal: 80 }
             ],
             rationale: ['Reduced Sodium', 'Low GI Grains', 'High Fiber', 'Diabetes Friendly']
         },
@@ -2131,10 +2138,12 @@ function getDietPlanSections() {
             time: '4:30 - 5:00 PM',
             icon: 'ES',
             iconBg: '#fce7f3',
+            kcal: 175,
+            macros: { protein: 7, carbs: 20, fat: 5, fiber: 4 },
             items: [
-                'Green tea (unsweetened)',
-                '1 multigrain khakhra or 2 flax crackers',
-                'Sprout salad with lemon (small bowl)'
+                { text: 'Green tea (unsweetened)', kcal: 0 },
+                { text: '1 multigrain khakhra or 2 flax crackers', kcal: 110 },
+                { text: 'Sprout salad with lemon (small bowl)', kcal: 65 }
             ],
             rationale: ['Antioxidant', 'Low Carb', 'Metabolism Support']
         },
@@ -2144,11 +2153,13 @@ function getDietPlanSections() {
             time: '7:30 - 8:00 PM',
             icon: 'DN',
             iconBg: '#ede9fe',
+            kcal: 385,
+            macros: { protein: 24, carbs: 34, fat: 15, fiber: 7 },
             items: [
-                '1 multigrain roti (small)',
-                'Palak/methi sabzi (low oil, no cream)',
-                '1 bowl mix veg soup (clear, no corn starch)',
-                'Small portion grilled paneer (50g)'
+                { text: '1 multigrain roti (small)', kcal: 80 },
+                { text: 'Palak/methi sabzi (low oil, no cream)', kcal: 90 },
+                { text: '1 bowl mix veg soup (clear, no corn starch)', kcal: 60 },
+                { text: 'Small portion grilled paneer (50g)', kcal: 130 }
             ],
             rationale: ['Light Carb', 'Iron Rich', 'Heart Healthy', 'Low Calorie']
         },
@@ -2158,13 +2169,59 @@ function getDietPlanSections() {
             time: '9:30 - 10:00 PM',
             icon: 'BT',
             iconBg: '#f5f3ff',
+            kcal: 90,
+            macros: { protein: 4, carbs: 10, fat: 3, fiber: 2 },
             items: [
-                '1 glass warm turmeric milk (low fat, no sugar)',
-                'Isabgol 1 tsp in water (if needed for fiber)'
+                { text: '1 glass warm turmeric milk (low fat, no sugar)', kcal: 80 },
+                { text: 'Isabgol 1 tsp in water (if needed for fiber)', kcal: 10 }
             ],
             rationale: ['Anti-inflammatory', 'Calcium', 'Digestive Health']
         }
     ];
+}
+
+// ============================================
+// NUTRITION SUMMARY (Review Plan modal only)
+// ============================================
+function buildNutritionSummaryHTML() {
+    const sections = getDietPlanSections();
+    let totalKcal = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0, totalFiber = 0;
+    sections.forEach(function(s) {
+        totalKcal    += (s.kcal || 0);
+        if (s.macros) {
+            totalProtein += (s.macros.protein || 0);
+            totalCarbs   += (s.macros.carbs   || 0);
+            totalFat     += (s.macros.fat     || 0);
+            totalFiber   += (s.macros.fiber   || 0);
+        }
+    });
+    return `
+        <div class="dp-nutrition-summary">
+            <span class="dp-nutr-label-row">Daily Nutrition Summary</span>
+            <div class="dp-nutr-chips">
+                <div class="dp-nutr-chip dp-nutr-kcal">
+                    <span class="dp-nutr-val">${totalKcal}</span>
+                    <span class="dp-nutr-unit">kcal</span>
+                </div>
+                <div class="dp-nutr-chip">
+                    <span class="dp-nutr-val">${totalProtein}g</span>
+                    <span class="dp-nutr-unit">Protein</span>
+                </div>
+                <div class="dp-nutr-chip">
+                    <span class="dp-nutr-val">${totalCarbs}g</span>
+                    <span class="dp-nutr-unit">Carbs</span>
+                </div>
+                <div class="dp-nutr-chip">
+                    <span class="dp-nutr-val">${totalFat}g</span>
+                    <span class="dp-nutr-unit">Fat</span>
+                </div>
+                <div class="dp-nutr-chip">
+                    <span class="dp-nutr-val">${totalFiber}g</span>
+                    <span class="dp-nutr-unit">Fiber</span>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 function renderDietPlanLoading(drawer) {
@@ -2231,16 +2288,21 @@ function buildAccordionItem(meal, expanded) {
     const regenSVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>`;
     const addSVG = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>`;
 
-    const itemsHTML = meal.items.map(item => `
+    const itemsHTML = meal.items.map(item => {
+        const itemText = (item && typeof item === 'object') ? (item.text || '') : String(item || '');
+        const itemKcal = (item && typeof item === 'object' && item.kcal != null && item.kcal > 0) ? item.kcal : null;
+        return `
         <li class="dp-meal-li">
             <span class="dp-item-dot"></span>
-            <span class="dp-item-text">${item}</span>
+            <span class="dp-item-text">${itemText}</span>
+            ${itemKcal !== null ? `<span class="dp-item-kcal">${itemKcal} kcal</span>` : ''}
             <div class="dp-item-btns">
                 <button class="dp-item-btn dp-edit-btn" title="Edit item">${editSVG}</button>
                 <button class="dp-item-btn dp-del-btn" title="Remove item">${delSVG}</button>
             </div>
         </li>
-    `).join('');
+    `;
+    }).join('');
 
     const rationaleHTML = meal.rationale.map(tag => `
         <span class="dp-rat-tag">${checkSVG} ${tag}</span>
@@ -2251,7 +2313,10 @@ function buildAccordionItem(meal, expanded) {
             <div class="dp-acc-header">
                 <div class="dp-acc-meal-icon" style="background:${meal.iconBg};">${meal.icon}</div>
                 <div class="dp-acc-info">
-                    <span class="dp-acc-title">${meal.title}</span>
+                    <div class="dp-acc-title-row">
+                        <span class="dp-acc-title">${meal.title}</span>
+                        ${meal.kcal ? `<span class="dp-acc-kcal">&bull; ${meal.kcal} kcal</span>` : ''}
+                    </div>
                     <span class="dp-acc-time">${meal.time}</span>
                 </div>
                 <div class="dp-acc-right">
@@ -2267,6 +2332,16 @@ function buildAccordionItem(meal, expanded) {
                     <button class="dp-add-item-btn" data-meal="${meal.id}">${addSVG} Add Item</button>
                     <button class="dp-regen-section-btn" data-meal="${meal.id}">${regenSVG} Regenerate ${meal.title}</button>
                 </div>
+                ${meal.macros ? `
+                <div class="dp-meal-macros">
+                    <span>${meal.macros.protein}g Protein</span>
+                    <span class="dp-macro-dot">&bull;</span>
+                    <span>${meal.macros.carbs}g Carbs</span>
+                    <span class="dp-macro-dot">&bull;</span>
+                    <span>${meal.macros.fat}g Fat</span>
+                    <span class="dp-macro-dot">&bull;</span>
+                    <span>${meal.macros.fiber}g Fiber</span>
+                </div>` : ''}
                 <div class="dp-rationale">
                     <span class="dp-rat-label">Optimized For:</span>
                     ${rationaleHTML}

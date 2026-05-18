@@ -3731,3 +3731,151 @@ textarea {
         padding: var(--space-lg);
     }
 }
+
+/* ============================================
+   REVIEW PLAN — NUTRITION VISIBILITY
+   Calories & macros shown ONLY inside the
+   Review Plan modal. Never on main workflow.
+   ============================================ */
+
+/* Daily nutrition summary strip — top of drawer body */
+.dp-nutrition-summary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+    padding: var(--space-md) var(--space-2xl);
+    border-bottom: 1px solid var(--bg-tertiary);
+    background: var(--bg-secondary);
+}
+
+.dp-nutr-label-row {
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.dp-nutr-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    flex: 1;
+}
+
+.dp-nutr-chip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    padding: var(--space-xs) var(--space-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--bg-active);
+    border-radius: var(--radius-md);
+    min-width: 60px;
+    text-align: center;
+}
+
+/* Calories chip gets a subtle blue tint */
+.dp-nutr-chip.dp-nutr-kcal {
+    background: var(--accent-primary-light);
+    border-color: rgba(37, 99, 235, 0.15);
+}
+
+.dp-nutr-chip.dp-nutr-kcal .dp-nutr-val {
+    color: var(--accent-primary);
+}
+
+.dp-nutr-val {
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.dp-nutr-unit {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* Per-meal calorie in accordion header */
+.dp-acc-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    min-width: 0;
+}
+
+.dp-acc-kcal {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+/* Per-item calorie on the right of each food item */
+.dp-item-kcal {
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    font-weight: 500;
+    flex-shrink: 0;
+    white-space: nowrap;
+    opacity: 0.8;
+    padding: 0 var(--space-xs);
+    transition: opacity var(--transition-fast);
+}
+
+/* Hide per-item kcal when hovering so edit/delete buttons have room */
+.dp-meal-li:hover .dp-item-kcal {
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Per-meal macro summary row at bottom of each meal section */
+.dp-meal-macros {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    font-size: var(--font-size-xs);
+    color: var(--text-tertiary);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+}
+
+.dp-macro-dot {
+    color: var(--text-tertiary);
+    opacity: 0.4;
+    font-size: 10px;
+    line-height: 1;
+}
+
+/* Bump accordion body max-height slightly to accommodate macro row */
+.dp-acc-expanded > .dp-acc-body {
+    max-height: 900px;
+}
+
+/* Responsive: nutrition summary stacks on narrow widths */
+@media (max-width: 700px) {
+    .dp-nutrition-summary {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        padding: var(--space-md) var(--space-lg);
+    }
+
+    .dp-nutr-chips {
+        width: 100%;
+    }
+
+    .dp-nutr-chip {
+        min-width: 54px;
+    }
+}
