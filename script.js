@@ -1968,22 +1968,36 @@ function createPlanReadyNotification() {
 // ============================================
 // DIET PLAN DRAWER
 // ============================================
+// ESC key handler — stored so it can be removed on close
+function _dpEscHandler(e) {
+    if (e.key === 'Escape') closeDietPlanModal();
+}
+
 function openDietPlanDrawer(isGenerating = false) {
     const overlay = document.getElementById('dpDrawerOverlay');
     if (!overlay) return;
-    const drawer = overlay.querySelector('.dp-drawer');
+    const modal = overlay.querySelector('.dp-drawer');
     if (isGenerating) {
-        renderDietPlanLoading(drawer);
+        renderDietPlanLoading(modal);
     } else {
-        renderDietPlanDrawer(drawer);
+        renderDietPlanDrawer(modal);
     }
+    // Lock background scroll
+    document.body.style.overflow = 'hidden';
     overlay.classList.remove('hidden');
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
             overlay.classList.add('dp-overlay-open');
-            drawer.classList.add('dp-drawer-open');
+            modal.classList.add('dp-drawer-open');
         });
     });
+    // ESC to close
+    document.addEventListener('keydown', _dpEscHandler);
+    // Focus the modal for accessibility
+    setTimeout(() => {
+        const focusTarget = modal.querySelector('.dp-close-btn, button, [tabindex]');
+        if (focusTarget) focusTarget.focus();
+    }, 260);
     if (isGenerating) {
         bindDietPlanLoadingEvents();
     } else {
@@ -1991,13 +2005,18 @@ function openDietPlanDrawer(isGenerating = false) {
     }
 }
 
-function closeDietPlanDrawer() {
+function closeDietPlanModal() {
     const overlay = document.getElementById('dpDrawerOverlay');
     if (!overlay) return;
     overlay.classList.remove('dp-overlay-open');
     overlay.querySelector('.dp-drawer').classList.remove('dp-drawer-open');
-    setTimeout(() => overlay.classList.add('hidden'), 320);
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', _dpEscHandler);
+    setTimeout(() => overlay.classList.add('hidden'), 280);
 }
+
+// Keep backward-compat alias
+function closeDietPlanDrawer() { closeDietPlanModal(); }
 
 function renderDietPlanDrawer(drawer) {
     const now = new Date().toLocaleString('en-IN', {

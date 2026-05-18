@@ -2863,16 +2863,21 @@ textarea {
 }
 
 /* ============================================
-   DIET PLAN DRAWER
+   DIET PLAN MODAL
    ============================================ */
 .dp-drawer-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.18);
+    background: rgba(0, 0, 0, 0.35);
     z-index: 500;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
     opacity: 0;
-    transition: opacity var(--transition-smooth);
+    transition: opacity 250ms cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
 }
 
@@ -2885,23 +2890,25 @@ textarea {
 }
 
 .dp-drawer {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 560px;
-    max-width: 96vw;
+    position: relative;
+    width: 73%;
+    max-width: 1000px;
+    height: 88vh;
+    max-height: 88vh;
     background: var(--bg-secondary);
     display: flex;
     flex-direction: column;
-    transform: translateX(100%);
-    transition: transform var(--transition-smooth);
-    box-shadow: -4px 0 40px rgba(0, 0, 0, 0.1);
+    border-radius: 22px;
+    transform: scale(0.96);
+    opacity: 0;
+    transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1), opacity 250ms cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.18), 0 8px 24px rgba(0, 0, 0, 0.10);
     overflow: hidden;
 }
 
 .dp-drawer-open {
-    transform: translateX(0);
+    transform: scale(1);
+    opacity: 1;
 }
 
 /* --- Drawer Header --- */
@@ -3521,22 +3528,33 @@ textarea {
 }
 
 /* ============================================
-   DIET PLAN DRAWER — RESPONSIVE
+   DIET PLAN MODAL — RESPONSIVE
    ============================================ */
+@media (max-width: 900px) {
+    .dp-drawer {
+        width: 88%;
+    }
+}
+
 @media (max-width: 640px) {
+    .dp-drawer-overlay {
+        padding: 0;
+        align-items: flex-end;
+    }
+
     .dp-drawer {
         width: 100%;
         max-width: 100%;
-        top: 0;
-        bottom: 0;
-        height: 100dvh;
-        transform: translateY(100%);
-        border-radius: 0;
-        box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.12);
+        height: 95dvh;
+        max-height: 95dvh;
+        border-radius: 20px 20px 0 0;
+        transform: scale(1) translateY(28px);
+        opacity: 0;
     }
 
     .dp-drawer-open {
-        transform: translateY(0);
+        transform: scale(1) translateY(0);
+        opacity: 1;
     }
 
     .dp-header-actions {
