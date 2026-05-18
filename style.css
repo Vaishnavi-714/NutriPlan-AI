@@ -3548,3 +3548,168 @@ textarea {
         justify-content: center;
     }
 }
+
+/* ============================================
+   DIET PLAN SUCCESS CARD
+   ============================================ */
+
+/* Override card layout for success state */
+.rh-diet-plan-success {
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--space-xl);
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 65%);
+    border-color: rgba(16, 185, 129, 0.22);
+    box-shadow: 0 2px 12px rgba(16, 185, 129, 0.07), var(--shadow-xs);
+    gap: var(--space-lg);
+}
+
+.rh-diet-plan-success:hover {
+    border-color: rgba(16, 185, 129, 0.35);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.1), var(--shadow-sm);
+}
+
+/* Head row: success icon + body */
+.rh-success-head {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+}
+
+/* Green checkmark circle */
+.rh-success-icon {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: var(--radius-full);
+    background: var(--success);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.28);
+    margin-top: 2px;
+}
+
+/* "Diet Plan Ready" headline */
+.rh-plan-ready-title {
+    font-size: var(--font-size-md);
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.2px;
+    margin-bottom: 3px;
+}
+
+/* Subtitle below title */
+.rh-plan-ready-sub {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-md);
+    line-height: 1.5;
+}
+
+/* Preview bullet list */
+.rh-plan-preview-list {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: var(--space-sm);
+}
+
+.rh-preview-item {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+    padding-left: var(--space-md);
+    position: relative;
+    line-height: 1.65;
+}
+
+.rh-preview-item::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-weight: 700;
+    font-size: 10px;
+    top: 1px;
+}
+
+/* Timestamp */
+.rh-plan-generated-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: var(--space-sm);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.rh-plan-generated-time::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--success);
+    opacity: 0.55;
+    flex-shrink: 0;
+}
+
+/* "Review Plan →" CTA — prominent, full-width */
+.rh-review-plan-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: var(--space-md) var(--space-xl);
+    background: var(--success);
+    color: white;
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font-family);
+    transition: all var(--transition-base);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.22);
+    letter-spacing: 0.1px;
+}
+
+.rh-review-plan-btn:hover {
+    background: #0da271;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(16, 185, 129, 0.32);
+}
+
+.rh-review-plan-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 4px rgba(16, 185, 129, 0.2);
+}
+
+/* ============================================
+   GENERATE ROW — EXIT TRANSITION
+   ============================================ */
+.rh-generate-row-fade-out {
+    animation: rhRowFadeOut 0.26s ease forwards;
+    pointer-events: none;
+}
+
+@keyframes rhRowFadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+}
+
+/* Success card responsive */
+@media (max-width: 600px) {
+    .rh-diet-plan-success {
+        padding: var(--space-lg);
+    }
+}

@@ -1456,30 +1456,40 @@ function createContextSummaryChips(limit = 7) {
 }
 
 function createGeneratedDietPlanCard() {
+    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     return `
-        <div class="review-hub-card rh-diet-plan rh-plan-appear" id="generatedPlanCard">
-            <div class="rh-card-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <path d="M9 2v20"/>
-                    <path d="M4 2v7a5 5 0 0 0 10 0V2"/>
-                    <path d="M18 2v20"/>
-                    <path d="M18 2c2 2 3 4 3 7v2h-3"/>
+        <div class="review-hub-card rh-diet-plan rh-diet-plan-success rh-plan-appear" id="generatedPlanCard">
+            <div class="rh-success-head">
+                <div class="rh-success-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20,6 9,17 4,12"/>
+                    </svg>
+                </div>
+                <div class="rh-card-body">
+                    <div class="rh-plan-ready-title">Diet Plan Ready</div>
+                    <div class="rh-plan-ready-sub">AI generated personalized nutrition plan</div>
+                    <div class="rh-plan-preview-list">
+                        <span class="rh-preview-item">Morning meals</span>
+                        <span class="rh-preview-item">Lunch recommendations</span>
+                        <span class="rh-preview-item">Evening snacks</span>
+                        <span class="rh-preview-item">Dinner plan</span>
+                        <span class="rh-preview-item">Bedtime nutrition</span>
+                    </div>
+                    <div class="rh-ctx-chips-compact rh-plan-chips">
+                        <span class="rh-ctx-chip rh-ctx-goal">Low GI</span>
+                        <span class="rh-ctx-chip rh-ctx-pref">High Fiber</span>
+                        <span class="rh-ctx-chip rh-ctx-condition">Low Sodium</span>
+                        <span class="rh-ctx-chip rh-ctx-condition">Diabetes Friendly</span>
+                    </div>
+                    <div class="rh-plan-generated-time">Generated at ${now}</div>
+                </div>
+            </div>
+            <button class="rh-review-plan-btn" id="openGeneratedPlanBtn">
+                Review Plan
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
                 </svg>
-            </div>
-            <div class="rh-card-body">
-                <div class="rh-card-title">Generated Diet Plan</div>
-                <div class="rh-card-meta">
-                    <span>6 meal sections generated</span>
-                    <span class="rh-badge rh-badge-ai">AI Generated</span>
-                    <span class="rh-badge rh-badge-editable">Doctor Editable</span>
-                </div>
-                <div class="rh-ctx-chips-compact rh-plan-chips">
-                    <span class="rh-ctx-chip rh-ctx-goal">Low GI</span>
-                    <span class="rh-ctx-chip rh-ctx-pref">High Fiber</span>
-                    <span class="rh-ctx-chip rh-ctx-condition">Low Sodium</span>
-                </div>
-            </div>
-            <button class="rh-review-btn" id="openGeneratedPlanBtn">View &rarr;</button>
+            </button>
         </div>
     `;
 }
@@ -1527,6 +1537,7 @@ function createReviewHub() {
                 ${state.planGenerated ? createGeneratedDietPlanCard() : ''}
             </div>
             <div class="ctx-review-section hidden" id="ctxReviewSection"></div>
+            ${!state.planGenerated ? `
             <div class="rh-generate-row">
                 <p class="rh-generate-hint">Context reviewed · Ready to generate.</p>
                 <button class="rh-generate-btn" id="proceedGenerateBtn">
@@ -1535,7 +1546,7 @@ function createReviewHub() {
                     </svg>
                     Generate Diet Plan
                 </button>
-            </div>
+            </div>` : ''}
         </div>
     `;
 }
@@ -1567,6 +1578,13 @@ function renderGeneratedPlanCard() {
 
     if (cards) {
         cards.insertAdjacentHTML('beforeend', createGeneratedDietPlanCard());
+
+        // Smoothly dismiss the generate row — it served its purpose
+        const generateRow = document.querySelector('.rh-generate-row');
+        if (generateRow) {
+            generateRow.classList.add('rh-generate-row-fade-out');
+            setTimeout(() => { generateRow.style.display = 'none'; }, 260);
+        }
     } else {
         addAIMessage(`
             <div class="review-hub">
