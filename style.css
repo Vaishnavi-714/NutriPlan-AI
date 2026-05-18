@@ -1993,6 +1993,15 @@ textarea {
     color: var(--success);
 }
 
+.rh-diet-plan .rh-card-icon {
+    background: var(--warning-light);
+    color: var(--warning);
+}
+
+.rh-plan-appear {
+    animation: rhPlanAppear 0.34s ease both;
+}
+
 .rh-card-body {
     flex: 1;
     min-width: 0;
@@ -2024,6 +2033,20 @@ textarea {
 .rh-badge-abnormal {
     background: var(--error-light);
     color: var(--error);
+}
+
+.rh-badge-ai {
+    background: var(--accent-primary-light);
+    color: var(--accent-primary);
+}
+
+.rh-badge-editable {
+    background: var(--success-light);
+    color: var(--success);
+}
+
+.rh-plan-chips {
+    margin-top: var(--space-xs);
 }
 
 .rh-review-btn {
@@ -2106,6 +2129,17 @@ textarea {
     border-top-color: white;
     border-radius: 50%;
     animation: spin 0.75s linear infinite;
+}
+
+@keyframes rhPlanAppear {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* ============================================
@@ -2716,6 +2750,14 @@ textarea {
     .rh-generate-btn {
         width: 100%;
         justify-content: center;
+    }
+
+    .review-hub-card {
+        align-items: flex-start;
+    }
+
+    .rh-card-meta {
+        flex-wrap: wrap;
     }
 }
 

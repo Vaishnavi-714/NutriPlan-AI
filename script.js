@@ -848,6 +848,7 @@ function generateDietPlan() {
     collectPreferences();
     state.planGenerated = false;
     state.planApproved = false;
+    removeGeneratedPlanCard();
 
     const trigger = document.getElementById('proceedGenerateBtn') || document.getElementById('generatePlanBtn');
     if (trigger) {
@@ -860,15 +861,9 @@ function generateDietPlan() {
         `;
     }
 
-    openDietPlanDrawer(true);
-
     setTimeout(() => {
         state.planGenerated = true;
-        const drawer = document.getElementById('dpDrawer');
-        if (drawer) {
-            renderDietPlanDrawer(drawer);
-            bindDietPlanDrawerEvents();
-        }
+        renderGeneratedPlanCard();
         if (trigger) {
             trigger.disabled = false;
             trigger.classList.remove('is-generating');
@@ -1460,6 +1455,35 @@ function createContextSummaryChips(limit = 7) {
     ].slice(0, limit).map(chip => `<span class="rh-ctx-chip">${chip}</span>`).join('');
 }
 
+function createGeneratedDietPlanCard() {
+    return `
+        <div class="review-hub-card rh-diet-plan rh-plan-appear" id="generatedPlanCard">
+            <div class="rh-card-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M9 2v20"/>
+                    <path d="M4 2v7a5 5 0 0 0 10 0V2"/>
+                    <path d="M18 2v20"/>
+                    <path d="M18 2c2 2 3 4 3 7v2h-3"/>
+                </svg>
+            </div>
+            <div class="rh-card-body">
+                <div class="rh-card-title">Generated Diet Plan</div>
+                <div class="rh-card-meta">
+                    <span>6 meal sections generated</span>
+                    <span class="rh-badge rh-badge-ai">AI Generated</span>
+                    <span class="rh-badge rh-badge-editable">Doctor Editable</span>
+                </div>
+                <div class="rh-ctx-chips-compact rh-plan-chips">
+                    <span class="rh-ctx-chip rh-ctx-goal">Low GI</span>
+                    <span class="rh-ctx-chip rh-ctx-pref">High Fiber</span>
+                    <span class="rh-ctx-chip rh-ctx-condition">Low Sodium</span>
+                </div>
+            </div>
+            <button class="rh-review-btn" id="openGeneratedPlanBtn">View &rarr;</button>
+        </div>
+    `;
+}
+
 function createReviewHub() {
     const totalMarkers = Object.values(BIOMARKER_DATA).reduce((s, g) => s + g.markers.length, 0);
     const abnormalMarkers = Object.values(BIOMARKER_DATA).reduce((s, g) => {
@@ -1500,6 +1524,7 @@ function createReviewHub() {
                     </div>
                     <button class="rh-review-btn" id="openContextReviewBtn">Edit →</button>
                 </div>
+                ${state.planGenerated ? createGeneratedDietPlanCard() : ''}
             </div>
             <div class="ctx-review-section hidden" id="ctxReviewSection"></div>
             <div class="rh-generate-row">
@@ -1520,14 +1545,40 @@ function bindReviewHubButtons() {
         const openBmBtn = document.getElementById('openBiomarkersBtn');
         const openCtxBtn = document.getElementById('openContextReviewBtn');
         const proceedBtn = document.getElementById('proceedGenerateBtn');
-        if (openBmBtn) openBmBtn.addEventListener('click', openBiomarkerDrawer);
-        if (openCtxBtn) openCtxBtn.addEventListener('click', toggleContextReview);
-        if (proceedBtn) proceedBtn.addEventListener('click', proceedToGenerate);
+        const openPlanBtn = document.getElementById('openGeneratedPlanBtn');
+        if (openBmBtn) openBmBtn.onclick = openBiomarkerDrawer;
+        if (openCtxBtn) openCtxBtn.onclick = toggleContextReview;
+        if (proceedBtn) proceedBtn.onclick = proceedToGenerate;
+        if (openPlanBtn) openPlanBtn.onclick = () => openDietPlanDrawer(false);
     }, 100);
 }
 
 function proceedToGenerate() {
     generateDietPlan();
+}
+
+function removeGeneratedPlanCard() {
+    document.getElementById('generatedPlanCard')?.remove();
+}
+
+function renderGeneratedPlanCard() {
+    removeGeneratedPlanCard();
+    const cards = document.querySelector('.review-hub-cards');
+
+    if (cards) {
+        cards.insertAdjacentHTML('beforeend', createGeneratedDietPlanCard());
+    } else {
+        addAIMessage(`
+            <div class="review-hub">
+                <div class="review-hub-cards">
+                    ${createGeneratedDietPlanCard()}
+                </div>
+            </div>
+        `);
+    }
+
+    bindReviewHubButtons();
+    document.getElementById('generatedPlanCard')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 // ============================================
