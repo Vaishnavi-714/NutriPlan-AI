@@ -6,33 +6,37 @@
 /* --- CSS Variables --- */
 :root {
     /* Colors */
-    --bg-primary: #fafbfc;
+    --bg-primary: #F8FAFC;
     --bg-secondary: #ffffff;
-    --bg-tertiary: #f4f5f7;
-    --bg-hover: #f0f1f3;
-    --bg-active: #e8eaed;
-    --bg-glass: rgba(255, 255, 255, 0.72);
-    --bg-glass-border: rgba(255, 255, 255, 0.18);
+    --bg-tertiary: #F1F5F9;
+    --bg-hover: #EFF3F8;
+    --bg-active: #E4EAF2;
+    --bg-glass: rgba(255, 255, 255, 0.82);
+    --bg-glass-border: rgba(255, 255, 255, 0.55);
 
-    --text-primary: #1a1d23;
-    --text-secondary: #5f6368;
-    --text-tertiary: #9aa0a6;
+    --text-primary: #0F172A;
+    --text-secondary: #334155;
+    --text-tertiary: #64748B;
     --text-inverse: #ffffff;
 
-    --accent-primary: #2563eb;
-    --accent-primary-light: #eff6ff;
-    --accent-primary-hover: #1d4ed8;
-    --accent-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
-    --accent-gradient-soft: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+    --accent-primary: #7C3AED;
+    --accent-primary-light: #EDE9FE;
+    --accent-primary-hover: #6D28D9;
+    --accent-gradient: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    --accent-gradient-soft: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
 
     --success: #10b981;
     --success-light: #ecfdf5;
+    --success-border: #A7F3D0;
     --warning: #f59e0b;
     --warning-light: #fffbeb;
+    --warning-border: #FDE68A;
     --error: #ef4444;
     --error-light: #fef2f2;
+    --error-border: #FECACA;
     --info: #6366f1;
     --info-light: #eef2ff;
+    --info-border: #C7D2FE;
 
     /* Spacing */
     --space-xs: 4px;
@@ -60,20 +64,27 @@
 
     /* Border Radius */
     --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 12px;
-    --radius-xl: 16px;
-    --radius-2xl: 20px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 18px;
+    --radius-2xl: 22px;
+    --radius-3xl: 28px;
     --radius-full: 9999px;
 
+    /* Borders */
+    --border-subtle: rgba(15, 23, 42, 0.06);
+    --border-base:   rgba(15, 23, 42, 0.09);
+    --border-strong: rgba(15, 23, 42, 0.14);
+
     /* Shadows */
-    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
-    --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
-    --shadow-input: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    --shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-sm: 0 1px 4px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+    --shadow-md: 0 4px 12px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.05);
+    --shadow-lg: 0 10px 24px -4px rgba(15, 23, 42, 0.10), 0 4px 8px -2px rgba(15, 23, 42, 0.05);
+    --shadow-xl: 0 20px 40px -8px rgba(15, 23, 42, 0.12), 0 8px 16px -4px rgba(15, 23, 42, 0.06);
+    --shadow-2xl: 0 32px 64px -12px rgba(15, 23, 42, 0.16);
+    --shadow-glow: 0 0 24px rgba(124, 58, 237, 0.20);
+    --shadow-input: 0 0 0 3px rgba(124, 58, 237, 0.12);
 
     /* Transitions */
     --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -141,56 +152,91 @@ textarea {
    ============================================ */
 .sidebar {
     width: var(--sidebar-width);
-    min-width: var(--sidebar-width);
     height: 100vh;
     background: var(--bg-secondary);
-    border-right: 1px solid var(--bg-tertiary);
+    border-right: 1px solid rgba(0, 0, 0, 0.06);
     display: flex;
     flex-direction: column;
-    transition: transform var(--transition-smooth), width var(--transition-smooth);
+    transition: width 260ms cubic-bezier(0.4, 0, 0.2, 1),
+                transform var(--transition-smooth);
     z-index: 100;
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
+/* ── Collapsed state (desktop only) ── */
+.sidebar.collapsed {
+    width: 72px;
+}
+
+/* In collapsed mode, center the toggle and hide the logo */
+.sidebar.collapsed .sidebar-header {
+    justify-content: center;
+    padding: 0 8px;
+}
+
+.sidebar.collapsed .logo {
+    display: none;
+}
+
+/* ── Header ── */
 .sidebar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: var(--space-lg) var(--space-xl);
+    padding: 0 10px 0 14px;
     height: var(--header-height);
+    flex-shrink: 0;
 }
 
 .logo {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
+    overflow: hidden;
+    flex-shrink: 0;
 }
 
 .logo-icon {
     width: 32px;
     height: 32px;
+    min-width: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--accent-gradient);
     color: white;
     border-radius: var(--radius-md);
+    flex-shrink: 0;
 }
 
 .logo-text {
     font-size: var(--font-size-md);
     font-weight: 600;
     color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 140px;
+    transition: opacity 200ms ease, max-width 260ms ease;
+}
+
+.sidebar.collapsed .logo-text {
+    opacity: 0;
+    max-width: 0;
+    pointer-events: none;
 }
 
 .sidebar-toggle {
     width: 32px;
     height: 32px;
+    min-width: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-sm);
     color: var(--text-secondary);
     transition: all var(--transition-fast);
+    flex-shrink: 0;
 }
 
 .sidebar-toggle:hover {
@@ -198,66 +244,204 @@ textarea {
     color: var(--text-primary);
 }
 
+/* ── Sidebar body (flex-fills the space above profile) ── */
+.sidebar-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* ── Collapsible text label (shared utility) ── */
+.sidebar-label {
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 200px;
+    transition: opacity 200ms ease, max-width 260ms ease;
+}
+
+.sidebar.collapsed .sidebar-label {
+    opacity: 0;
+    max-width: 0;
+    pointer-events: none;
+}
+
+/* ── New Patient CTA ── */
+.sidebar-actions {
+    padding: 10px 12px 8px;
+    flex-shrink: 0;
+}
+
 .new-patient-btn {
     display: flex;
     align-items: center;
-    gap: var(--space-sm);
-    margin: 0 var(--space-lg) var(--space-md);
-    padding: var(--space-md) var(--space-lg);
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+    padding: 10px 14px;
     background: var(--accent-gradient);
     color: white;
     border-radius: var(--radius-md);
     font-size: var(--font-size-sm);
     font-weight: 500;
     transition: all var(--transition-base);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .new-patient-btn:hover {
     transform: translateY(-1px);
-    box-shadow: var(--shadow-md), var(--shadow-glow);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
 }
 
 .new-patient-btn:active {
     transform: translateY(0);
 }
 
+.btn-icon-el {
+    flex-shrink: 0;
+    min-width: 15px;
+}
+
+.sidebar.collapsed .new-patient-btn {
+    justify-content: center;
+    padding: 10px;
+}
+
+/* ── Search ── */
+.sidebar-search-wrap {
+    padding: 0 12px 10px;
+    flex-shrink: 0;
+}
+
 .search-box {
     display: flex;
     align-items: center;
     gap: var(--space-sm);
-    margin: 0 var(--space-lg) var(--space-lg);
-    padding: var(--space-sm) var(--space-md);
+    padding: 8px 11px;
     background: var(--bg-tertiary);
     border-radius: var(--radius-md);
     color: var(--text-tertiary);
     transition: all var(--transition-base);
+    overflow: hidden;
 }
 
 .search-box:focus-within {
     background: var(--bg-secondary);
     box-shadow: 0 0 0 2px var(--accent-primary);
-}
-
-.search-box input {
-    flex: 1;
-    font-size: var(--font-size-sm);
     color: var(--text-primary);
 }
 
-.search-box input::placeholder {
+.search-icon-el {
+    flex-shrink: 0;
+}
+
+.search-input-el {
+    flex: 1;
+    font-size: var(--font-size-sm);
+    color: var(--text-primary);
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 200px;
+    transition: opacity 200ms ease, max-width 260ms ease;
+}
+
+.search-input-el::placeholder {
     color: var(--text-tertiary);
 }
 
-/* Patient List */
+.sidebar.collapsed .search-input-el {
+    opacity: 0;
+    max-width: 0;
+    pointer-events: none;
+}
+
+.sidebar.collapsed .search-box {
+    justify-content: center;
+    padding: 8px;
+    cursor: pointer;
+}
+
+/* ── History Section ── */
+.sidebar-history {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.history-header-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 10px 5px 14px;
+    color: var(--text-tertiary);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    flex-shrink: 0;
+    width: 100%;
+    text-align: left;
+    border-radius: var(--radius-sm);
+}
+
+.history-header-btn:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+
+.history-btn-left {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+}
+
+.history-btn-left svg {
+    flex-shrink: 0;
+}
+
+.history-chevron-icon {
+    flex-shrink: 0;
+    transition: transform 220ms ease, opacity 200ms ease, max-width 260ms ease;
+    max-width: 20px;
+}
+
+.sidebar.collapsed .history-chevron-icon {
+    opacity: 0;
+    max-width: 0;
+    pointer-events: none;
+}
+
+.sidebar-history.history-collapsed .history-chevron-icon {
+    transform: rotate(-90deg);
+}
+
+.sidebar.collapsed .history-header-btn {
+    justify-content: center;
+    padding: 8px;
+}
+
+/* ── Patient List ── */
 .patient-list {
     flex: 1;
     overflow-y: auto;
-    padding: 0 var(--space-sm);
+    overflow-x: hidden;
+    padding: 2px 6px 8px;
+    transition: opacity 200ms ease;
+}
+
+.sidebar-history.history-collapsed .patient-list {
+    display: none;
 }
 
 .patient-list::-webkit-scrollbar {
-    width: 4px;
+    width: 3px;
 }
 
 .patient-list::-webkit-scrollbar-track {
@@ -269,41 +453,71 @@ textarea {
     border-radius: var(--radius-full);
 }
 
+/* ── Patient Groups ── */
 .patient-group {
-    margin-bottom: var(--space-lg);
+    margin-bottom: 10px;
 }
 
 .group-label {
     display: block;
-    padding: var(--space-sm) var(--space-md);
-    font-size: var(--font-size-xs);
-    font-weight: 500;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 600;
     color: var(--text-tertiary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.6px;
+    white-space: nowrap;
+    overflow: hidden;
+    transition: opacity 200ms ease, max-height 260ms ease, padding 260ms ease;
+    max-height: 28px;
 }
 
+.sidebar.collapsed .group-label {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    pointer-events: none;
+}
+
+/* ── Patient Items ── */
 .patient-item {
     display: flex;
     align-items: center;
-    gap: var(--space-md);
-    padding: var(--space-md) var(--space-md);
+    gap: 10px;
+    padding: 7px 8px;
     border-radius: var(--radius-md);
     cursor: pointer;
     transition: all var(--transition-fast);
+    overflow: hidden;
 }
 
 .patient-item:hover {
     background: var(--bg-hover);
 }
 
+.patient-item:hover .patient-avatar {
+    transform: scale(1.06);
+}
+
 .patient-item.active {
-    background: var(--accent-primary-light);
+    background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%);
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.12);
 }
 
 .patient-item.active .patient-name {
     color: var(--accent-primary);
     font-weight: 500;
+}
+
+.patient-item.active .patient-avatar {
+    background: var(--accent-gradient);
+    color: white;
+}
+
+.sidebar.collapsed .patient-item {
+    justify-content: center;
+    padding: 6px 4px;
 }
 
 .patient-avatar {
@@ -316,8 +530,10 @@ textarea {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: var(--font-size-xs);
+    font-size: 11px;
     font-weight: 600;
+    transition: all var(--transition-base);
+    flex-shrink: 0;
 }
 
 .patient-info {
@@ -326,6 +542,17 @@ textarea {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    overflow: hidden;
+    max-width: 180px;
+    transition: opacity 200ms ease, max-width 260ms ease, flex 260ms ease;
+}
+
+.sidebar.collapsed .patient-info {
+    opacity: 0;
+    max-width: 0;
+    flex: 0;
+    pointer-events: none;
+    overflow: hidden;
 }
 
 .patient-name {
@@ -338,9 +565,178 @@ textarea {
 }
 
 .patient-time {
-    font-size: var(--font-size-xs);
+    font-size: 11px;
     color: var(--text-tertiary);
 }
+
+/* ── Doctor Profile (sticky bottom) ── */
+.sidebar-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+    overflow: hidden;
+    transition: all var(--transition-base);
+    cursor: default;
+}
+
+.sidebar-profile:hover {
+    background: var(--bg-hover);
+}
+
+.sidebar.collapsed .sidebar-profile {
+    justify-content: center;
+    padding: 12px 6px;
+}
+
+.sidebar-profile-avatar {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: var(--radius-full);
+    background: var(--accent-gradient);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.sidebar-profile-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+    max-width: 140px;
+    transition: opacity 200ms ease, max-width 260ms ease, flex 260ms ease;
+}
+
+.sidebar.collapsed .sidebar-profile-info {
+    opacity: 0;
+    max-width: 0;
+    flex: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.sidebar-profile-name {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-profile-role {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+.sidebar-profile-action {
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    color: var(--text-tertiary);
+    overflow: hidden;
+    max-width: 30px;
+    transition: all var(--transition-fast), opacity 200ms ease, max-width 260ms ease;
+}
+
+.sidebar-profile-action:hover {
+    background: var(--bg-active);
+    color: var(--text-primary);
+}
+
+.sidebar.collapsed .sidebar-profile-action {
+    opacity: 0;
+    max-width: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+/* ── Sidebar Tooltip (JS-managed, position:fixed — escapes overflow:hidden) ── */
+.sidebar-tooltip {
+    position: fixed;
+    background: #1a1d23;
+    color: #fff;
+    padding: 5px 11px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translateY(-50%);
+    opacity: 0;
+    transition: opacity 150ms ease;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+    font-family: var(--font-family);
+}
+
+.sidebar-tooltip.visible {
+    opacity: 1;
+}
+
+/* ── Mobile Header ── */
+.mobile-header {
+    display: none;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    height: var(--header-height);
+    border-bottom: 1px solid var(--bg-tertiary);
+    background: var(--bg-secondary);
+    flex-shrink: 0;
+}
+
+.mobile-menu-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+}
+
+.mobile-menu-btn:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.mobile-header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.mobile-header-logo-icon {
+    width: 26px;
+    height: 26px;
+    background: var(--accent-gradient);
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+
 
 /* ============================================
    MAIN CONTENT AREA
@@ -1404,19 +1800,71 @@ textarea {
 }
 
 @media (max-width: 900px) {
+    /* Show mobile top bar */
+    .mobile-header {
+        display: flex;
+    }
+
+    /* Sidebar becomes a left-edge overlay drawer */
     .sidebar {
         position: fixed;
         left: 0;
         top: 0;
+        height: 100vh;
         transform: translateX(-100%);
         z-index: 200;
         box-shadow: var(--shadow-xl);
+        /* Restore full width on mobile — no collapse */
+        width: var(--sidebar-width) !important;
     }
 
     .sidebar.visible {
         transform: translateX(0);
     }
 
+    /* Ensure text is visible inside mobile drawer regardless of collapsed class */
+    .sidebar .logo-text,
+    .sidebar .sidebar-label,
+    .sidebar .history-chevron-icon,
+    .sidebar .search-input-el,
+    .sidebar .sidebar-profile-info,
+    .sidebar .sidebar-profile-action,
+    .sidebar .patient-info,
+    .sidebar .group-label {
+        opacity: 1 !important;
+        max-width: 200px !important;
+        max-height: 28px !important;
+        flex: 1 !important;
+        overflow: hidden !important;
+        pointer-events: auto !important;
+    }
+
+    .sidebar .new-patient-btn {
+        justify-content: flex-start !important;
+        padding: 10px 14px !important;
+    }
+
+    .sidebar .search-box {
+        justify-content: flex-start !important;
+        padding: 8px 11px !important;
+    }
+
+    .sidebar .history-header-btn {
+        justify-content: space-between !important;
+        padding: 5px 10px 5px 14px !important;
+    }
+
+    .sidebar .patient-item {
+        justify-content: flex-start !important;
+        padding: 7px 8px !important;
+    }
+
+    .sidebar .sidebar-profile {
+        justify-content: flex-start !important;
+        padding: 12px 14px !important;
+    }
+
+    /* Main content keeps full width */
     .welcome-state {
         padding: var(--space-2xl);
     }
@@ -3878,4 +4326,578 @@ textarea {
     .dp-nutr-chip {
         min-width: 54px;
     }
+}
+
+/* ============================================================
+   PREMIUM VISUAL OVERRIDES — NutriCopilot v2
+   Applied on top of base styles for premium AI-native look
+   ============================================================ */
+
+/* ─── Base Refinements ─── */
+body {
+    background: #F8FAFC;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ─── App Ambient Background ─── */
+.app-container::before {
+    content: '';
+    position: fixed;
+    top: -15%;
+    right: -8%;
+    width: 560px;
+    height: 560px;
+    background: radial-gradient(ellipse at center, rgba(124, 58, 237, 0.040) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* ─── Sidebar Premium Upgrade ─── */
+.sidebar {
+    background: #FFFFFF;
+    border-right: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 1px 0 0 rgba(15, 23, 42, 0.04);
+    position: relative;
+}
+
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 160px;
+    background: linear-gradient(180deg, rgba(124, 58, 237, 0.030) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.sidebar-header {
+    border-bottom: 1px solid rgba(15, 23, 42, 0.055);
+    position: relative;
+    z-index: 1;
+}
+
+.logo-icon {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.28);
+    border-radius: 10px;
+}
+
+.logo-text {
+    font-weight: 650;
+    letter-spacing: -0.25px;
+    color: #0F172A;
+}
+
+.new-patient-btn {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    box-shadow: 0 2px 10px rgba(124, 58, 237, 0.28), 0 1px 2px rgba(124, 58, 237, 0.15);
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 560;
+    letter-spacing: 0.1px;
+}
+
+.new-patient-btn:hover {
+    box-shadow: 0 4px 18px rgba(124, 58, 237, 0.38), 0 2px 4px rgba(124, 58, 237, 0.20);
+    transform: translateY(-1px);
+}
+
+.search-box {
+    background: #F1F5F9;
+    border: 1px solid transparent;
+    border-radius: 10px;
+}
+
+.search-box:focus-within {
+    background: #FFFFFF;
+    border-color: rgba(124, 58, 237, 0.22);
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.08);
+}
+
+.patient-item {
+    border-radius: 10px;
+}
+
+.patient-item:hover {
+    background: #F1F5F9;
+}
+
+.patient-item.active {
+    background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
+    box-shadow: inset 0 0 0 1px rgba(124, 58, 237, 0.14);
+}
+
+.patient-item.active .patient-name {
+    color: #7C3AED;
+    font-weight: 560;
+}
+
+.patient-avatar {
+    border-radius: 50%;
+    background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
+    color: #7C3AED;
+}
+
+.patient-item.active .patient-avatar {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+}
+
+.sidebar-profile-avatar {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.22);
+}
+
+.sidebar-profile {
+    border-top: 1px solid rgba(15, 23, 42, 0.055);
+}
+
+/* ─── Welcome State ─── */
+.greeting {
+    font-size: 26px;
+    font-weight: 680;
+    letter-spacing: -0.6px;
+    color: #0F172A;
+}
+
+.greeting-sub {
+    color: #64748B;
+    font-size: 14px;
+}
+
+.quick-action-card {
+    border-radius: 18px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    transition: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quick-action-card:hover {
+    border-color: rgba(124, 58, 237, 0.18);
+    box-shadow: 0 6px 18px -2px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(124, 58, 237, 0.08);
+    transform: translateY(-2px);
+}
+
+.quick-action-card:hover .qa-icon {
+    background: #EDE9FE;
+    color: #7C3AED;
+}
+
+/* ─── Prompt Box Premium ─── */
+.prompt-box {
+    border-radius: 20px;
+    border: 1px solid rgba(15, 23, 42, 0.07);
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -1px rgba(15, 23, 42, 0.04),
+                0 1px 0 rgba(255,255,255,0.8) inset;
+    transition: all 220ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prompt-box:focus-within {
+    border-color: rgba(124, 58, 237, 0.22);
+    box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 0 0 4px rgba(124, 58, 237, 0.08);
+}
+
+.generate-btn {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.28);
+}
+
+.generate-btn:hover {
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.40);
+    transform: scale(1.04);
+}
+
+/* ─── Message Bubbles ─── */
+.message-avatar.ai {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+    border-radius: 10px;
+}
+
+.message-avatar.user {
+    background: #F1F5F9;
+    color: #64748B;
+    border: 1px solid rgba(15, 23, 42, 0.07);
+    border-radius: 10px;
+}
+
+.typing-indicator span {
+    background: #7C3AED;
+}
+
+/* ─── Context Cards ─── */
+.context-card {
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.chip.selected {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    border-color: transparent;
+}
+
+.activity-chip.selected {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    border-color: transparent;
+}
+
+/* ─── Generate Plan Button ─── */
+.generate-plan-btn {
+    border-radius: 14px;
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.28);
+    font-size: 14px;
+    font-weight: 560;
+    letter-spacing: 0.1px;
+}
+
+.generate-plan-btn:hover {
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.40);
+}
+
+.rh-generate-btn {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+}
+
+/* ─── Review Hub Cards ─── */
+.review-hub-card {
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.rh-card-icon {
+    border-radius: 10px;
+    background: #EDE9FE;
+    color: #7C3AED;
+}
+
+/* ─── Meal Cards ─── */
+.meal-card {
+    border-radius: 16px;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.meal-card:hover {
+    box-shadow: 0 6px 20px -3px rgba(15, 23, 42, 0.09);
+    transform: translateY(-1px);
+    border-color: rgba(15, 23, 42, 0.10);
+}
+
+/* ─── Processing Stages ─── */
+.processing-stage-item.active .processing-stage-dot {
+    background: #7C3AED;
+    border-color: #7C3AED;
+}
+
+.processing-stage-item.complete .processing-stage-dot {
+    background: #10b981;
+    border-color: #10b981;
+}
+
+/* ─── Context Panel ─── */
+.context-panel {
+    background: #FFFFFF;
+    border-left: 1px solid rgba(15, 23, 42, 0.06);
+    box-shadow: -2px 0 12px rgba(15, 23, 42, 0.04);
+}
+
+.patient-profile-card {
+    border-radius: 16px;
+    background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
+    border: 1px solid rgba(124, 58, 237, 0.14);
+}
+
+.profile-avatar {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+}
+
+.vital-card {
+    border-radius: 12px;
+    transition: all 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vital-card:hover {
+    box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+    transform: translateY(-1px);
+}
+
+.vital-value.high  { color: #EF4444; }
+.vital-value.warning { color: #F59E0B; }
+.vital-value.low   { color: #6366F1; }
+.vital-value.normal { color: #10B981; }
+
+/* ─── BM Drawer ─── */
+.bm-drawer {
+    box-shadow: -4px 0 40px rgba(15, 23, 42, 0.12);
+}
+
+.bm-row {
+    border-radius: 14px;
+}
+
+.bm-group-tab.active {
+    background: #EDE9FE;
+    color: #7C3AED;
+}
+
+/* ─── Upload Card ─── */
+.upload-action-card {
+    border-radius: 24px;
+    box-shadow: 0 8px 32px -4px rgba(15, 23, 42, 0.10);
+}
+
+.upload-success-badge {
+    background: #ECFDF5;
+    border-color: #A7F3D0;
+    color: #10B981;
+}
+
+.process-reports-btn {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+}
+
+/* ─── Plan Actions ─── */
+.plan-action-btn.primary {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+}
+
+/* ─── Plan Approved Banner ─── */
+.plan-approved {
+    border-radius: 16px;
+}
+
+/* ─── RH Diet Plan Card ─── */
+.rh-diet-plan-success {
+    background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 50%, #F8F5FF 100%);
+    border-color: rgba(124, 58, 237, 0.16) !important;
+}
+
+.rh-success-icon {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    box-shadow: 0 2px 10px rgba(124, 58, 237, 0.28);
+}
+
+.rh-review-plan-btn {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    box-shadow: 0 2px 10px rgba(124, 58, 237, 0.28);
+}
+
+/* ─── Workflow Steps ─── */
+.workflow-step.active .workflow-step-icon {
+    border-color: #7C3AED;
+    background: #EDE9FE;
+    color: #7C3AED;
+}
+
+.workflow-step.completed .workflow-step-icon {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    border-color: transparent;
+}
+
+/* ─── Observations & Alerts ─── */
+.observation-item {
+    border-radius: 10px;
+    background: #F8FAFC;
+    border: 1px solid rgba(15, 23, 42, 0.06);
+}
+
+.obs-dot { background: #7C3AED; }
+
+/* ─── Mobile overlay ─── */
+.mobile-overlay {
+    background: rgba(15, 23, 42, 0.40);
+    backdrop-filter: blur(4px);
+}
+
+/* ─── Page Transition Loading Screen ─── */
+.dashboard-transition {
+    background: #0A0B0F;
+}
+
+.dt-icon {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%) !important;
+    border-radius: 12px;
+}
+
+.dash-transition-progress {
+    background: linear-gradient(90deg, #7C3AED, #8B5CF6) !important;
+}
+
+/* ─── Scrollbar premium styling ─── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: rgba(15, 23, 42, 0.10);
+    border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(15, 23, 42, 0.18);
+}
+
+/* ─── BM CTA Block ─── */
+.bm-cta-block {
+    border-radius: 14px;
+    background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
+    border: 1px solid rgba(124, 58, 237, 0.14);
+}
+
+/* ─── Alert Chips ─── */
+.alert-chip { border-radius: 999px; }
+
+/* ─── Mobile header refinement ─── */
+.mobile-header-logo-icon {
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+}
+
+/* ─── Shimmer pulse with purple tint ─── */
+.shimmer {
+    background: linear-gradient(
+        90deg,
+        #F1F5F9 25%,
+        rgba(124, 58, 237, 0.04) 50%,
+        #F1F5F9 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s infinite;
+    border-radius: 6px;
+}
+
+/* ─── Additional smooth animations ─── */
+@keyframes shimmer {
+    from { background-position: 200% 0; }
+    to   { background-position: -200% 0; }
+}
+
+@keyframes stagePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.25); }
+    50%      { box-shadow: 0 0 0 5px rgba(124, 58, 237, 0); }
+}
+
+@keyframes stepPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(124, 58, 237, 0.20); }
+    50%      { box-shadow: 0 0 0 4px rgba(124, 58, 237, 0); }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: none; }
+}
+
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.82); }
+    to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: 0; }
+}
+
+/* ─── Profile Dropdown Menu ─── */
+.profile-menu {
+    position: fixed;
+    z-index: 9999;
+    background: #FFFFFF;
+    border: 1px solid rgba(15, 23, 42, 0.09);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px -4px rgba(15, 23, 42, 0.14),
+                0 2px 8px rgba(15, 23, 42, 0.06);
+    padding: 6px;
+    min-width: 220px;
+    opacity: 0;
+    transform: translateY(6px);
+    pointer-events: none;
+    transition: opacity 180ms cubic-bezier(0.4, 0, 0.2, 1),
+                transform 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.profile-menu.is-open {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.profile-menu-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 10px 12px;
+}
+
+.profile-menu-avatar {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.25);
+}
+
+.profile-menu-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #0F172A;
+    white-space: nowrap;
+}
+
+.profile-menu-email {
+    font-size: 11.5px;
+    color: #64748B;
+    white-space: nowrap;
+}
+
+.profile-menu-divider {
+    height: 1px;
+    background: rgba(15, 23, 42, 0.07);
+    margin: 4px 4px;
+}
+
+.profile-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #334155;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 140ms ease, color 140ms ease;
+    font-family: var(--font);
+    text-align: left;
+}
+
+.profile-menu-item:hover {
+    background: #F1F5F9;
+    color: #0F172A;
+}
+
+.profile-menu-item--danger {
+    color: #DC2626;
+}
+
+.profile-menu-item--danger:hover {
+    background: #FEF2F2;
+    color: #B91C1C;
+}
+
+/* Highlight profile strip when menu is open */
+.sidebar-profile.menu-open {
+    background: var(--bg-hover);
 }

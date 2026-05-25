@@ -34,6 +34,7 @@ const $$ = (sel) => document.querySelectorAll(sel);
 const els = {
     sidebar: $('#sidebar'),
     sidebarToggle: $('#sidebarToggle'),
+    mobileSidebarBtn: $('#mobileSidebarBtn'),
     mainContent: $('#mainContent'),
     welcomeState: $('#welcomeState'),
     uploadReviewState: $('#uploadReviewState'),
@@ -51,6 +52,8 @@ const els = {
     newPatientBtn: $('#newPatientBtn'),
     patientSearch: $('#patientSearch'),
     patientList: $('#patientList'),
+    sidebarHistory: $('#sidebarHistory'),
+    historyToggle: $('#historyToggle'),
     contextPanel: $('#contextPanel'),
     contextEmpty: $('#contextEmpty'),
     contextReports: $('#contextReports'),
@@ -67,8 +70,10 @@ const els = {
 // ============================================
 function init() {
     setGreeting();
+    restoreSidebarState();
     bindEvents();
     autoResizeTextareas();
+    initSidebarTooltips();
 }
 
 function setGreeting() {
@@ -79,18 +84,48 @@ function setGreeting() {
     els.greeting.textContent = `${greet}, Dr. Sharma`;
 }
 
+// Persist sidebar collapsed state across reloads
+function restoreSidebarState() {
+    if (window.innerWidth > 900) {
+        const wasCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+        if (wasCollapsed) els.sidebar.classList.add('collapsed');
+    }
+}
+
 // ============================================
 // EVENT BINDINGS
 // ============================================
 function bindEvents() {
-    // Sidebar
+    // Sidebar toggle (hamburger) — desktop collapse / mobile open
     els.sidebarToggle.addEventListener('click', toggleSidebar);
+
+    // Mobile: dedicated "open sidebar" button in the top bar
+    if (els.mobileSidebarBtn) {
+        els.mobileSidebarBtn.addEventListener('click', openMobileSidebar);
+    }
+
+    // Overlay closes sidebar + context panel
     els.mobileOverlay.addEventListener('click', closePanels);
+
+    // History section collapse
+    if (els.historyToggle && els.sidebarHistory) {
+        els.historyToggle.addEventListener('click', toggleHistory);
+    }
+
+    // Auto-expand sidebar when search is focused while collapsed (desktop)
+    if (els.patientSearch) {
+        els.patientSearch.addEventListener('focus', () => {
+            if (window.innerWidth > 900 && els.sidebar.classList.contains('collapsed')) {
+                els.sidebar.classList.remove('collapsed');
+                localStorage.setItem('sidebarCollapsed', 'false');
+            }
+        });
+    }
 
     // New Patient
     els.newPatientBtn.addEventListener('click', startNewPatient);
 
-    // Patient list
+    // Patient list (event delegation)
     els.patientList.addEventListener('click', handlePatientClick);
 
     // Search
@@ -170,16 +205,33 @@ function autoResizeTextareas() {
 // SIDEBAR
 // ============================================
 function toggleSidebar() {
-    els.sidebar.classList.toggle('visible');
     if (window.innerWidth <= 900) {
-        els.mobileOverlay.classList.toggle('hidden', !els.sidebar.classList.contains('visible'));
+        // Mobile: the hamburger inside the (open) sidebar closes it
+        els.sidebar.classList.remove('visible');
+        els.mobileOverlay.classList.add('hidden');
+    } else {
+        // Desktop: collapse / expand
+        const isNowCollapsed = els.sidebar.classList.toggle('collapsed');
+        localStorage.setItem('sidebarCollapsed', isNowCollapsed);
     }
+}
+
+function openMobileSidebar() {
+    els.sidebar.classList.add('visible');
+    els.mobileOverlay.classList.remove('hidden');
 }
 
 function closePanels() {
     els.sidebar.classList.remove('visible');
     els.contextPanel.classList.remove('visible');
     els.mobileOverlay.classList.add('hidden');
+}
+
+// ============================================
+// HISTORY SECTION TOGGLE
+// ============================================
+function toggleHistory() {
+    els.sidebarHistory.classList.toggle('history-collapsed');
 }
 
 // ============================================
@@ -2543,6 +2595,45 @@ function exportDietPlan() {
         btn.innerHTML = original;
         btn.classList.remove('dp-btn-exported');
     }, 2500);
+}
+
+// ============================================
+// SIDEBAR TOOLTIPS (position:fixed, escapes overflow)
+// ============================================
+function initSidebarTooltips() {
+    const tooltip = document.createElement('div');
+    tooltip.className = 'sidebar-tooltip';
+    tooltip.id = 'sidebarTooltip';
+    document.body.appendChild(tooltip);
+
+    let hideTimer = null;
+
+    els.sidebar.addEventListener('mouseover', (e) => {
+        if (!els.sidebar.classList.contains('collapsed')) return;
+        const target = e.target.closest('[data-tooltip]');
+        if (!target) return;
+
+        clearTimeout(hideTimer);
+        const text = target.dataset.tooltip;
+        if (!text) return;
+
+        const rect = target.getBoundingClientRect();
+        tooltip.textContent = text;
+        tooltip.style.left = (rect.right + 10) + 'px';
+        tooltip.style.top  = (rect.top + rect.height / 2) + 'px';
+        tooltip.classList.add('visible');
+    });
+
+    els.sidebar.addEventListener('mouseout', (e) => {
+        const leaving = e.target.closest('[data-tooltip]');
+        if (!leaving) return;
+        hideTimer = setTimeout(() => tooltip.classList.remove('visible'), 80);
+    });
+
+    // Also hide when sidebar is expanded
+    els.sidebar.addEventListener('transitionend', () => {
+        tooltip.classList.remove('visible');
+    });
 }
 
 // ============================================
