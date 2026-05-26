@@ -320,6 +320,8 @@ function bindEvents() {
     els.voiceBtn.addEventListener('click', handleVoice);
     els.fileInput.addEventListener('change', handleFileUpload);
 
+    document.getElementById('logoutTopBtn')?.addEventListener('click', handleLogout);
+
     // Keyboard
     els.promptInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
@@ -1154,17 +1156,19 @@ function transitionToChat() {
 
 function addMessage(type, content, isFile = false, persist = true) {
     const msg = document.createElement('div');
-    msg.className = type === 'user' ? 'message user-message' : 'message';
+    msg.className = type === 'user' ? 'message user-message' : 'message ai-message';
 
     const avatarClass = type === 'user' ? 'user' : 'ai';
     const avatarText = type === 'user' ? 'DS' : 'AI';
-    const label = type === 'user' ? 'You' : 'NutriCopilot';
+    const label = type === 'user' ? 'Doctor' : 'NutriCopilot';
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     msg.innerHTML = `
         <div class="message-avatar ${avatarClass}">${avatarText}</div>
         <div class="message-content">
-            <div class="message-label">${label}</div>
-            ${isFile ? `
+            <div class="message-label">${label}<span>${time}</span></div>
+            <div class="message-bubble">
+                ${isFile ? `
                 <div class="upload-success">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -1172,7 +1176,8 @@ function addMessage(type, content, isFile = false, persist = true) {
                     </svg>
                     <span>${content}</span>
                 </div>
-            ` : `<p>${content}</p>`}
+                ` : `<p>${content}</p>`}
+            </div>
         </div>
     `;
 
@@ -1186,12 +1191,13 @@ function addMessage(type, content, isFile = false, persist = true) {
 
 function addAIMessage(htmlContent) {
     const msg = document.createElement('div');
-    msg.className = 'message';
+    msg.className = 'message ai-message';
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     msg.innerHTML = `
         <div class="message-avatar ai">AI</div>
         <div class="message-content">
-            <div class="message-label">NutriCopilot</div>
-            ${htmlContent}
+            <div class="message-label">NutriCopilot<span>${time}</span></div>
+            <div class="message-bubble">${htmlContent}</div>
         </div>
     `;
     els.chatMessages.appendChild(msg);
@@ -1208,12 +1214,15 @@ function removeLastMessage() {
 
 function showTypingIndicator() {
     const indicator = document.createElement('div');
-    indicator.className = 'message typing-message';
+    indicator.className = 'message ai-message typing-message';
     indicator.innerHTML = `
         <div class="message-avatar ai">AI</div>
         <div class="message-content">
-            <div class="typing-indicator">
-                <span></span><span></span><span></span>
+            <div class="message-label">NutriCopilot</div>
+            <div class="message-bubble">
+                <div class="typing-indicator">
+                    <span></span><span></span><span></span>
+                </div>
             </div>
         </div>
     `;
@@ -1259,12 +1268,13 @@ function simulateAIResponse(userText) {
 
 function streamText(text, persist = false, patientId = state.activePatientId) {
     const msg = document.createElement('div');
-    msg.className = 'message';
+    msg.className = 'message ai-message';
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     msg.innerHTML = `
         <div class="message-avatar ai">AI</div>
         <div class="message-content">
-            <div class="message-label">NutriCopilot</div>
-            <p class="streaming-text"></p>
+            <div class="message-label">NutriCopilot<span>${time}</span></div>
+            <div class="message-bubble"><p class="streaming-text"></p></div>
         </div>
     `;
     els.chatMessages.appendChild(msg);
@@ -2420,6 +2430,7 @@ function closeBiomarkerDrawer() {
     overlay.classList.remove('bm-overlay-open');
     overlay.querySelector('.bm-drawer').classList.remove('bm-drawer-open');
     setTimeout(() => overlay.classList.add('hidden'), 320);
+    document.removeEventListener('keydown', handleBiomarkerEsc);
 }
 
 function bindBiomarkerDrawerEvents() {
@@ -2434,6 +2445,20 @@ function bindBiomarkerDrawerEvents() {
             renderBiomarkerGroup(tab.dataset.group);
         };
     });
+    document.addEventListener('keydown', handleBiomarkerEsc);
+}
+
+function handleBiomarkerEsc(e) {
+    if (e.key === 'Escape') {
+        closeBiomarkerDrawer();
+        document.removeEventListener('keydown', handleBiomarkerEsc);
+    }
+}
+
+function handleLogout() {
+    ['sidebarCollapsed'].forEach(key => localStorage.removeItem(key));
+    sessionStorage.clear();
+    window.location.href = 'landing.html';
 }
 
 function renderBiomarkerGroup(groupKey) {
