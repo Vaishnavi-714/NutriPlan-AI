@@ -10,6 +10,29 @@ const PLAN_PATIENTS = {
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
+const MEAL_COUNT_MAP = {
+    3: ['Breakfast', 'Lunch', 'Dinner'],
+    4: ['Breakfast', 'Lunch', 'Evening Snack', 'Dinner'],
+    5: ['Early Morning', 'Breakfast', 'Lunch', 'Evening Snack', 'Dinner'],
+    6: ['Early Morning', 'Breakfast', 'Mid-Morning', 'Lunch', 'Evening Snack', 'Dinner'],
+    7: ['Early Morning', 'Breakfast', 'Mid-Morning', 'Lunch', 'Evening Snack', 'Dinner', 'Bedtime']
+};
+
+const MEAL_IMAGES = {
+    'Early Morning': 'https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=900&q=80',
+    Breakfast: 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?auto=format&fit=crop&w=900&q=80',
+    'Mid-Morning': 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&w=900&q=80',
+    Lunch: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&w=900&q=80',
+    'Evening Snack': 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=900&q=80',
+    Dinner: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=900&q=80',
+    Bedtime: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=900&q=80'
+};
+
+const planState = {
+    activeDay: 'Monday',
+    mealCount: 7
+};
+
 const MEALS = [
     {
         title: 'Early Morning', time: '6:30 AM', kcal: 95, thumb: 'water',
@@ -77,7 +100,8 @@ function initPlanPage() {
     document.getElementById('planPatientMeta').textContent = patient.meta;
     document.querySelector('.plan-risk-chip').textContent = patient.risk;
     renderTabs();
-    renderMeals('Monday');
+    renderMeals(planState.activeDay);
+    document.getElementById('mealCountSelect').addEventListener('change', handleMealCountChange);
     document.getElementById('approvePlanBtn').addEventListener('click', approvePlan);
     document.getElementById('exportPlanBtn').addEventListener('click', flashExport);
 }
@@ -94,9 +118,22 @@ function renderTabs() {
         tab.addEventListener('click', () => {
             tabs.querySelectorAll('.plan-day-tab').forEach(item => item.classList.remove('active'));
             tab.classList.add('active');
-            renderMeals(tab.dataset.day);
+            planState.activeDay = tab.dataset.day;
+            renderMeals(planState.activeDay);
         });
     });
+}
+
+function handleMealCountChange(e) {
+    planState.mealCount = Number(e.target.value);
+    e.target.closest('.meal-count-control').classList.add('has-feedback');
+    setTimeout(() => e.target.closest('.meal-count-control')?.classList.remove('has-feedback'), 280);
+    renderMeals(planState.activeDay);
+}
+
+function getVisibleMeals() {
+    const allowed = MEAL_COUNT_MAP[planState.mealCount] || MEAL_COUNT_MAP[7];
+    return MEALS.filter(meal => allowed.includes(meal.title));
 }
 
 function renderMeals(day) {
@@ -104,7 +141,7 @@ function renderMeals(day) {
     const grid = document.getElementById('mealCardGrid');
     grid.classList.add('is-switching');
     setTimeout(() => {
-        grid.innerHTML = MEALS.map(meal => createMealCard(meal)).join('');
+        grid.innerHTML = getVisibleMeals().map((meal, index) => createMealCard(meal, index)).join('');
         grid.querySelectorAll('.meal-edit-btn').forEach(button => {
             button.addEventListener('click', () => {
                 const card = button.closest('.meal-card');
@@ -127,16 +164,18 @@ function renderMeals(day) {
     }, 130);
 }
 
-function createMealCard(meal) {
+function createMealCard(meal, index = 0) {
+    const imageUrl = MEAL_IMAGES[meal.title] || MEAL_IMAGES.Breakfast;
     return `
-        <article class="meal-card">
-            <div class="meal-image ${meal.thumb}" aria-hidden="true">
+        <article class="meal-card" style="--card-delay:${index * 45}ms">
+            <div class="meal-image ${meal.thumb}" style="background-image: linear-gradient(180deg, rgba(19, 34, 51, 0.02), rgba(19, 34, 51, 0.28)), url('${imageUrl}')" aria-hidden="true">
                 <span class="meal-image-label">${meal.title}</span>
+                <span class="meal-image-kcal">${meal.kcal} kcal</span>
             </div>
             <div class="meal-card-top">
                 <div>
                     <h3>${meal.title}</h3>
-                    <div class="meal-meta">${meal.time} · ${meal.kcal} kcal · ${meal.portion}</div>
+                    <div class="meal-meta"><span>${meal.time}</span><span>${meal.kcal} kcal</span><span>${meal.portion}</span></div>
                     <p class="meal-summary">${meal.summary}</p>
                 </div>
                 <button class="meal-edit-btn">Edit</button>
@@ -169,12 +208,15 @@ function approvePlan() {
     const btn = document.getElementById('approvePlanBtn');
     btn.textContent = 'Approved';
     btn.style.background = '#43AFA3';
+    btn.classList.add('is-confirmed');
 }
 
 function flashExport() {
     const btn = document.getElementById('exportPlanBtn');
     const original = btn.textContent;
     btn.textContent = 'Export ready';
+    btn.classList.add('is-exporting');
+    setTimeout(() => { btn.classList.remove('is-exporting'); }, 420);
     setTimeout(() => { btn.textContent = original; }, 1600);
 }
 

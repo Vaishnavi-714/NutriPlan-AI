@@ -60,6 +60,55 @@ const WIZARD_OPTIONS = {
     clinicalGoals: ['Diabetes control', 'Weight loss', 'Weight gain', 'Heart healthy', 'Low sodium', 'Low sugar', 'Low fat', 'High protein', 'Renal friendly', 'Thyroid support', 'Digestive health', 'PCOS support', 'General wellness']
 };
 
+const WIZARD_VISUALS = {
+    'Milk / Dairy': { icon: 'MD', tone: 'dairy', image: 'milk-dairy.svg', helper: 'Check lactose or milk protein sensitivity' },
+    Gluten: { icon: 'GL', tone: 'grain', image: 'gluten.svg', helper: 'Wheat, roti, bread, bakery review' },
+    Nuts: { icon: 'NT', tone: 'seed', image: 'nuts.svg', helper: 'Tree nuts and seed cross-contact' },
+    Soy: { icon: 'SY', tone: 'plant', image: 'soy.svg', helper: 'Soybean, tofu, textured protein' },
+    Shellfish: { icon: 'SF', tone: 'protein', image: 'shellfish.svg', helper: 'Seafood allergy flag' },
+    Egg: { icon: 'EG', tone: 'protein', image: 'egg.svg', helper: 'Egg-based foods and hidden ingredients' },
+    Sesame: { icon: 'SS', tone: 'seed', image: 'nuts-seeds.svg', helper: 'Seeds, tahini, bakery toppings' },
+    'No known allergies': { icon: 'OK', tone: 'balanced', image: 'mixed.svg', helper: 'Use when none reported' },
+    Other: { icon: 'OT', tone: 'balanced', image: 'mixed.svg', helper: 'Add details' },
+    Vegetarian: { icon: 'VG', tone: 'plant', image: 'vegetarian.svg', helper: 'Plant-forward Indian meal pattern' },
+    'Non-vegetarian': { icon: 'NV', tone: 'protein', image: 'non-vegetarian.svg', helper: 'Includes poultry or fish options' },
+    Vegan: { icon: 'VN', tone: 'plant', image: 'vegan.svg', helper: 'No dairy, egg, or animal products' },
+    Eggetarian: { icon: 'ET', tone: 'protein', image: 'eggetarian.svg', helper: 'Vegetarian base with eggs' },
+    Jain: { icon: 'JN', tone: 'grain', image: 'jain.svg', helper: 'No onion, garlic, or root foods' },
+    Mixed: { icon: 'MX', tone: 'balanced', image: 'mixed.svg', helper: 'Flexible food pattern' },
+    'Roti / Chapati': { icon: 'RC', tone: 'grain', image: 'roti.svg', helper: 'Daily flatbread pattern' },
+    Rice: { icon: 'RI', tone: 'grain', image: 'rice.svg', helper: 'Portion and timing review' },
+    Dal: { icon: 'DL', tone: 'plant', image: 'dal.svg', helper: 'Protein and fiber base' },
+    Paneer: { icon: 'PN', tone: 'dairy', image: 'paneer.svg', helper: 'Dairy protein option' },
+    Eggs: { icon: 'EG', tone: 'protein', image: 'eggs.svg', helper: 'Breakfast protein option' },
+    Chicken: { icon: 'CH', tone: 'protein', image: 'chicken.svg', helper: 'Lean protein option' },
+    Fish: { icon: 'FS', tone: 'protein', image: 'fish.svg', helper: 'Omega-rich protein option' },
+    Fruits: { icon: 'FR', tone: 'fresh', image: 'fruits.svg', helper: 'Low GI fruit planning' },
+    Salads: { icon: 'SA', tone: 'fresh', image: 'salads.svg', helper: 'Fiber and volume support' },
+    'Milk / Curd': { icon: 'MC', tone: 'dairy', image: 'curd-buttermilk.svg', helper: 'Dairy tolerance review' },
+    Sprouts: { icon: 'SP', tone: 'plant', image: 'salads.svg', helper: 'Light protein snack' },
+    Oats: { icon: 'OA', tone: 'grain', image: 'rice.svg', helper: 'High-fiber breakfast base' },
+    Millets: { icon: 'MI', tone: 'grain', image: 'roti.svg', helper: 'Low GI grain rotation' },
+    Poha: { icon: 'PH', tone: 'grain', image: 'rice.svg', helper: 'Breakfast portion review' },
+    Upma: { icon: 'UP', tone: 'grain', image: 'khichdi.svg', helper: 'Breakfast option' },
+    Idli: { icon: 'ID', tone: 'grain', image: 'rice.svg', helper: 'Fermented breakfast option' },
+    Dosa: { icon: 'DO', tone: 'grain', image: 'roti.svg', helper: 'Breakfast option' },
+    Paratha: { icon: 'PA', tone: 'grain', image: 'paratha.svg', helper: 'Oil and filling review' },
+    Khichdi: { icon: 'KH', tone: 'plant', image: 'khichdi.svg', helper: 'Light balanced meal' },
+    'Paneer dishes': { icon: 'PD', tone: 'dairy', image: 'paneer.svg', helper: 'Protein-rich vegetarian option' },
+    'Fruit bowls': { icon: 'FB', tone: 'fresh', image: 'fruits.svg', helper: 'Fruit combination review' },
+    Soup: { icon: 'SO', tone: 'fresh', image: 'soup.svg', helper: 'Light dinner support' },
+    'Curd / Buttermilk': { icon: 'CB', tone: 'dairy', image: 'curd-buttermilk.svg', helper: 'Probiotic dairy option' },
+    'Nuts / Seeds': { icon: 'NS', tone: 'seed', image: 'nuts-seeds.svg', helper: 'Healthy fat portion control' },
+    'Tea / Coffee': { icon: 'TC', tone: 'balanced', image: 'curd-buttermilk.svg', helper: 'Caffeine and sugar review' },
+    'Fast food': { icon: 'FF', tone: 'caution', image: 'paratha.svg', helper: 'Frequency and substitution review' },
+    Sweets: { icon: 'SW', tone: 'caution', image: 'fruits.svg', helper: 'Sugar control priority' },
+    '3 meals': { icon: '3', tone: 'meal', image: 'meals-3.svg', helper: 'Breakfast, lunch, dinner' },
+    '4 meals': { icon: '4', tone: 'meal', image: 'meals-4.svg', helper: 'Adds one snack window' },
+    '5 meals': { icon: '5', tone: 'meal', image: 'meals-5.svg', helper: 'Includes morning or evening support' },
+    '6 meals': { icon: '6', tone: 'meal', image: 'meals-6.svg', helper: 'Small frequent meals' }
+};
+
 // Frontend-only clinical record snapshots used to simulate patient-specific workspaces.
 const PATIENT_RECORDS = {
     '1': {
@@ -1156,7 +1205,7 @@ function transitionToChat() {
 
 function addMessage(type, content, isFile = false, persist = true) {
     const msg = document.createElement('div');
-    msg.className = type === 'user' ? 'message user-message' : 'message ai-message';
+    msg.className = type === 'user' ? 'message chat-row user-message' : 'message chat-row ai-message ai-message-row';
 
     const avatarClass = type === 'user' ? 'user' : 'ai';
     const avatarText = type === 'user' ? 'DS' : 'AI';
@@ -1164,10 +1213,10 @@ function addMessage(type, content, isFile = false, persist = true) {
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     msg.innerHTML = `
-        <div class="message-avatar ${avatarClass}">${avatarText}</div>
-        <div class="message-content">
-            <div class="message-label">${label}<span>${time}</span></div>
-            <div class="message-bubble">
+        <div class="message-avatar chat-avatar ${avatarClass} ${type === 'user' ? '' : 'ai-avatar'}">${avatarText}</div>
+        <div class="message-content chat-message-content">
+            <div class="message-label chat-meta">${label}<span>${time}</span></div>
+            <div class="message-bubble chat-bubble ${type === 'user' ? '' : 'ai-message-bubble'}">
                 ${isFile ? `
                 <div class="upload-success">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1191,13 +1240,13 @@ function addMessage(type, content, isFile = false, persist = true) {
 
 function addAIMessage(htmlContent) {
     const msg = document.createElement('div');
-    msg.className = 'message ai-message';
+    msg.className = 'message chat-row ai-message ai-message-row';
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     msg.innerHTML = `
-        <div class="message-avatar ai">AI</div>
-        <div class="message-content">
-            <div class="message-label">NutriCopilot<span>${time}</span></div>
-            <div class="message-bubble">${htmlContent}</div>
+        <div class="message-avatar chat-avatar ai ai-avatar">AI</div>
+        <div class="message-content chat-message-content">
+            <div class="message-label chat-meta">NutriCopilot<span>${time}</span></div>
+            <div class="message-bubble chat-bubble ai-message-bubble">${htmlContent}</div>
         </div>
     `;
     els.chatMessages.appendChild(msg);
@@ -1214,12 +1263,12 @@ function removeLastMessage() {
 
 function showTypingIndicator() {
     const indicator = document.createElement('div');
-    indicator.className = 'message ai-message typing-message';
+    indicator.className = 'message chat-row ai-message ai-message-row typing-message';
     indicator.innerHTML = `
-        <div class="message-avatar ai">AI</div>
-        <div class="message-content">
-            <div class="message-label">NutriCopilot</div>
-            <div class="message-bubble">
+        <div class="message-avatar chat-avatar ai ai-avatar">AI</div>
+        <div class="message-content chat-message-content">
+            <div class="message-label chat-meta">NutriCopilot</div>
+            <div class="message-bubble chat-bubble ai-message-bubble">
                 <div class="typing-indicator">
                     <span></span><span></span><span></span>
                 </div>
@@ -1268,13 +1317,13 @@ function simulateAIResponse(userText) {
 
 function streamText(text, persist = false, patientId = state.activePatientId) {
     const msg = document.createElement('div');
-    msg.className = 'message ai-message';
+    msg.className = 'message chat-row ai-message ai-message-row';
     const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     msg.innerHTML = `
-        <div class="message-avatar ai">AI</div>
-        <div class="message-content">
-            <div class="message-label">NutriCopilot<span>${time}</span></div>
-            <div class="message-bubble"><p class="streaming-text"></p></div>
+        <div class="message-avatar chat-avatar ai ai-avatar">AI</div>
+        <div class="message-content chat-message-content">
+            <div class="message-label chat-meta">NutriCopilot<span>${time}</span></div>
+            <div class="message-bubble chat-bubble ai-message-bubble"><p class="streaming-text"></p></div>
         </div>
     `;
     els.chatMessages.appendChild(msg);
@@ -2742,7 +2791,7 @@ function createWizardStepContent(stepId) {
             `;
         case 'meals':
             return `
-                ${createTileGrid(WIZARD_OPTIONS.mealsPerDay, data.mealsPerDay, { key: 'mealsPerDay', multi: false, visual: false, large: true })}
+                ${createTileGrid(WIZARD_OPTIONS.mealsPerDay, data.mealsPerDay, { key: 'mealsPerDay', multi: false, visual: true, compact: true, mealCount: true })}
                 <div class="wizard-form-row">
                     <label class="wizard-field"><span>Breakfast time</span><input type="time" data-wizard-field="breakfastTime" value="${data.breakfastTime || ''}"></label>
                     <label class="wizard-field"><span>Lunch time</span><input type="time" data-wizard-field="lunchTime" value="${data.lunchTime || ''}"></label>
@@ -2776,17 +2825,38 @@ function createTileGrid(options, selected, config = {}) {
     const classes = ['wizard-tile-grid'];
     if (config.large) classes.push('wizard-tile-grid-large');
     if (config.compact) classes.push('wizard-tile-grid-compact');
+    if (config.mealCount) classes.push('wizard-meal-count-grid');
     return `<div class="${classes.join(' ')}">${options.map((option, index) => {
         const active = values.includes(option);
         const visualClass = option.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+        const visual = getWizardVisual(option);
+        const imageHTML = visual.image
+            ? `<img src="assets/images/preferences/${visual.image}" alt="${option} preference visual" loading="lazy">`
+            : '';
         return `
-            <button class="wizard-select-tile ${active ? 'selected' : ''}" type="button" data-wizard-select="${config.key}" data-value="${option}" data-multi="${config.multi ? 'true' : 'false'}">
-                ${config.visual ? `<span class="wizard-tile-visual wizard-visual-${visualClass}"><i>${option.split(/[ /-]/).filter(Boolean).map(part => part[0]).join('').slice(0, 2)}</i></span>` : ''}
-                <span>${option}</span>
-                <small>${getTileHelper(option, index)}</small>
+            <button class="wizard-select-tile ${config.visual ? 'preference-card' : ''} ${config.mealCount ? 'wizard-meal-count-tile' : ''} ${active ? 'selected' : ''}" type="button" data-wizard-select="${config.key}" data-value="${option}" data-multi="${config.multi ? 'true' : 'false'}">
+                ${config.visual ? `<span class="wizard-tile-visual preference-card-image wizard-visual-${visualClass} wizard-tone-${visual.tone}">${imageHTML}<i>${visual.icon}</i>${config.mealCount ? createMealTimeline(option) : ''}</span>` : ''}
+                <span class="preference-card-content">
+                    <strong>${option}</strong>
+                    <small>${visual.helper || getTileHelper(option, index)}</small>
+                </span>
             </button>
         `;
     }).join('')}</div>`;
+}
+
+function getWizardVisual(option) {
+    return WIZARD_VISUALS[option] || {
+        icon: option.split(/[ /-]/).filter(Boolean).map(part => part[0]).join('').slice(0, 2),
+        tone: 'balanced',
+        image: null,
+        helper: getTileHelper(option, 0)
+    };
+}
+
+function createMealTimeline(option) {
+    const count = Number(String(option).match(/\d+/)?.[0] || 3);
+    return `<b class="wizard-meal-timeline">${Array.from({ length: count }).map((_, i) => `<em style="--dot:${i + 1}"></em>`).join('')}</b>`;
 }
 
 function createChipGroup(options, selected, key, multi = true) {
@@ -2810,6 +2880,9 @@ function getTileHelper(option, index) {
         'Mixed': 'Flexible pattern',
         'Fast food': 'Frequency check',
         'Sweets': 'Sugar review',
+        '3 meals': 'Breakfast, lunch, dinner',
+        '4 meals': 'Adds one snack window',
+        '5 meals': 'Includes morning or evening support',
         '6 meals': 'Small frequent meals'
     };
     if (helpers[option]) return helpers[option];

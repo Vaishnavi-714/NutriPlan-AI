@@ -691,3 +691,533 @@
         width: 100%;
     }
 }
+
+/* ============================================================
+   Premium clinical plan polish
+   ============================================================ */
+:root {
+    --plan-surface: rgba(255, 255, 255, 0.92);
+    --plan-surface-strong: #FFFFFF;
+    --plan-ring: rgba(67, 175, 163, 0.20);
+    --plan-card-shadow: 0 18px 46px rgba(26, 72, 103, 0.085);
+    --plan-card-shadow-hover: 0 26px 60px rgba(26, 72, 103, 0.14);
+}
+
+.plan-page-body {
+    background:
+        radial-gradient(circle at 6% -8%, rgba(67, 175, 163, 0.16), transparent 26rem),
+        radial-gradient(circle at 96% -10%, rgba(41, 111, 163, 0.17), transparent 30rem),
+        linear-gradient(180deg, #FFFFFF 0%, #F7FBFC 38%, #EEF6F8 100%);
+}
+
+.plan-page-shell {
+    padding: 18px 0 34px;
+}
+
+.plan-topbar {
+    min-height: 58px;
+    padding: 0 4px;
+}
+
+.plan-brand-mark {
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 0 14px;
+    border: 1px solid rgba(41, 111, 163, 0.12);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 10px 26px rgba(26, 72, 103, 0.07);
+}
+
+.plan-brand-mark::before {
+    content: '';
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--plan-blue), var(--plan-teal));
+    box-shadow: 0 8px 18px rgba(41, 111, 163, 0.22);
+}
+
+.plan-back-link,
+.plan-secondary-btn,
+.plan-primary-btn,
+.meal-edit-btn,
+.meal-swap-btn,
+.alternative-chip,
+.meal-count-control select {
+    will-change: transform;
+}
+
+.plan-primary-btn {
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--plan-blue), var(--plan-teal));
+}
+
+.plan-primary-btn.is-confirmed {
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--plan-teal), #2D9A81) !important;
+    animation: planPulse 420ms ease;
+}
+
+.plan-secondary-btn.is-exporting {
+    animation: planPulse 420ms ease;
+}
+
+.plan-hero {
+    margin-top: 10px;
+    padding: clamp(24px, 4vw, 42px);
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
+    gap: 24px;
+    border-radius: 30px;
+    background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(242, 248, 251, 0.92)),
+        radial-gradient(circle at 86% 20%, rgba(67, 175, 163, 0.16), transparent 13rem);
+    box-shadow: 0 28px 74px rgba(26, 72, 103, 0.12);
+}
+
+.plan-hero::after {
+    opacity: 0.55;
+}
+
+.plan-hero h1 {
+    margin: 11px 0 10px;
+    max-width: 620px;
+    font-size: clamp(36px, 4.8vw, 58px);
+}
+
+.plan-hero-actions {
+    margin-top: 20px;
+}
+
+.plan-patient-card,
+.clinical-summary-card,
+.nutrition-card,
+.meal-plan-section,
+.meal-card {
+    background: var(--plan-surface);
+    box-shadow: var(--plan-card-shadow);
+    backdrop-filter: blur(12px);
+}
+
+.plan-patient-card {
+    border-radius: 24px;
+}
+
+.plan-summary-grid {
+    margin-top: 14px;
+    grid-template-columns: minmax(300px, 1.85fr) repeat(5, minmax(112px, 1fr));
+    gap: 10px;
+    align-items: stretch;
+}
+
+.clinical-summary-card {
+    min-height: 132px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 22px;
+}
+
+.clinical-summary-card h3 {
+    margin: 7px 0 5px;
+    font-size: 18px;
+}
+
+.clinical-summary-card p {
+    max-width: 62ch;
+    font-size: 13px;
+}
+
+.plan-tag-row {
+    margin-top: 12px;
+}
+
+.nutrition-card {
+    min-height: 132px;
+    padding: 16px;
+    align-content: center;
+    justify-items: start;
+    border-radius: 22px;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.nutrition-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(67, 175, 163, 0.24);
+    box-shadow: var(--plan-card-shadow-hover);
+}
+
+.nutrition-card i {
+    top: 13px;
+    left: 13px;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #EAF4FA, #EAF8F6);
+}
+
+.nutrition-card strong {
+    margin-top: 24px;
+    font-size: 28px;
+}
+
+.nutrition-card span {
+    letter-spacing: 0.08em;
+}
+
+.plan-day-tabs {
+    margin: 16px 0;
+    gap: 8px;
+}
+
+.plan-day-tab {
+    min-height: 56px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.78);
+    box-shadow: 0 8px 22px rgba(26, 72, 103, 0.045);
+}
+
+.plan-day-tab:hover {
+    color: var(--plan-navy);
+    background: #FFFFFF;
+}
+
+.plan-day-tab:hover span {
+    color: var(--plan-muted);
+}
+
+.plan-day-tab.active,
+.plan-day-tab.active:hover {
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--plan-blue), var(--plan-teal));
+    color: #FFFFFF;
+    box-shadow: 0 16px 32px rgba(41, 111, 163, 0.20);
+}
+
+.plan-day-tab.active span,
+.plan-day-tab.active:hover span {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.meal-plan-section {
+    padding: 22px;
+    border-radius: 28px;
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.80), rgba(247, 251, 252, 0.76)),
+        radial-gradient(circle at 94% 0%, rgba(67, 175, 163, 0.10), transparent 15rem);
+}
+
+.meal-plan-heading {
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.meal-plan-heading h2 {
+    font-size: 26px;
+}
+
+.meal-plan-controls {
+    max-width: 520px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 14px;
+    text-align: right;
+}
+
+.meal-plan-controls p {
+    max-width: 320px;
+    font-size: 13px;
+}
+
+.meal-count-control {
+    flex: 0 0 auto;
+    min-width: 154px;
+    display: grid;
+    gap: 6px;
+    text-align: left;
+}
+
+.meal-count-control span {
+    color: var(--plan-muted);
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+}
+
+.meal-count-control select {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 38px 0 14px;
+    border: 1px solid rgba(41, 111, 163, 0.16);
+    border-radius: 14px;
+    appearance: none;
+    background:
+        linear-gradient(45deg, transparent 50%, var(--plan-blue) 50%) calc(100% - 18px) 18px / 6px 6px no-repeat,
+        linear-gradient(135deg, #FFFFFF, #F7FBFC);
+    color: var(--plan-navy);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 850;
+    box-shadow: 0 10px 24px rgba(26, 72, 103, 0.07);
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.meal-count-control select:hover,
+.meal-count-control select:focus {
+    transform: translateY(-1px);
+    border-color: rgba(67, 175, 163, 0.34);
+    box-shadow: 0 0 0 4px rgba(67, 175, 163, 0.11), 0 14px 28px rgba(26, 72, 103, 0.10);
+    outline: none;
+}
+
+.meal-count-control.has-feedback select {
+    animation: planPulse 280ms ease;
+}
+
+.meal-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 1fr;
+    gap: 14px;
+}
+
+.meal-card {
+    min-height: 650px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-radius: 24px;
+    border-color: rgba(41, 111, 163, 0.11);
+    animation: mealCardEnter 420ms ease both;
+    animation-delay: var(--card-delay, 0ms);
+}
+
+.meal-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--plan-card-shadow-hover);
+}
+
+.meal-image {
+    min-height: 156px;
+    background-size: cover;
+    background-position: center;
+    isolation: isolate;
+}
+
+.meal-image::before {
+    inset: auto 0 0;
+    height: 70%;
+    background: linear-gradient(180deg, transparent, rgba(19, 34, 51, 0.42));
+    z-index: 0;
+}
+
+.meal-image::after {
+    display: none;
+}
+
+.meal-image-label,
+.meal-image-kcal {
+    position: absolute;
+    z-index: 1;
+    border-radius: 999px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 20px rgba(19, 34, 51, 0.12);
+}
+
+.meal-image-label {
+    left: 14px;
+    top: 14px;
+    background: rgba(255, 255, 255, 0.86);
+}
+
+.meal-image-kcal {
+    right: 14px;
+    bottom: 14px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.88);
+    color: var(--plan-navy);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.meal-card-top {
+    padding: 16px 17px 10px;
+    gap: 12px;
+}
+
+.meal-card h3 {
+    font-size: 19px;
+}
+
+.meal-meta {
+    margin-top: 7px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+.meal-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 8px;
+    border-radius: 999px;
+    background: #F2F8FB;
+    color: #41576B;
+}
+
+.meal-summary {
+    display: -webkit-box;
+    min-height: 42px;
+    margin-top: 8px;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.meal-card-body {
+    flex: 1;
+    padding: 0 17px 17px;
+    display: flex;
+    flex-direction: column;
+}
+
+.meal-card-tags {
+    min-height: 31px;
+    gap: 6px;
+}
+
+.meal-card-tags span {
+    padding: 6px 9px;
+    font-size: 10.5px;
+}
+
+.meal-card-subhead {
+    margin: 13px 0 8px;
+}
+
+.food-list {
+    grid-auto-rows: minmax(42px, auto);
+}
+
+.food-line {
+    display: flex;
+    align-items: center;
+    min-height: 42px;
+    padding: 9px 11px;
+    border-radius: 13px;
+}
+
+.food-portion {
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 13px;
+    background: #FFFFFF;
+    border: 1px solid rgba(41, 111, 163, 0.09);
+}
+
+.meal-note {
+    min-height: 58px;
+    margin: 10px 0 12px;
+    display: flex;
+    align-items: center;
+}
+
+.alternative-block {
+    margin-top: auto;
+}
+
+.alternative-row {
+    gap: 6px;
+}
+
+.alternative-chip {
+    padding: 7px 9px;
+    font-size: 10.5px;
+}
+
+.meal-swap-btn {
+    align-self: flex-start;
+}
+
+@keyframes mealCardEnter {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes planPulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(0.985); }
+}
+
+@media (max-width: 1120px) {
+    .plan-summary-grid {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
+
+    .clinical-summary-card {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 1060px) {
+    .meal-card-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .meal-card {
+        min-height: 0;
+    }
+}
+
+@media (max-width: 760px) {
+    .plan-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .clinical-summary-card {
+        grid-column: 1 / -1;
+    }
+
+    .meal-plan-heading,
+    .meal-plan-controls {
+        align-items: stretch;
+        flex-direction: column;
+        text-align: left;
+    }
+
+    .meal-plan-controls {
+        max-width: none;
+    }
+
+    .meal-plan-controls p {
+        max-width: none;
+    }
+
+    .meal-count-control {
+        width: 100%;
+    }
+}
+
+@media (max-width: 520px) {
+    .plan-summary-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .meal-image {
+        min-height: 132px;
+    }
+}

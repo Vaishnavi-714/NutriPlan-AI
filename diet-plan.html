@@ -76,7 +76,19 @@
                     <span class="plan-eyebrow">Meal schedule</span>
                     <h2><span id="activeDayName">Monday</span> recommendations</h2>
                 </div>
-                <p>Each meal includes editable foods, portions, and structured alternatives.</p>
+                <div class="meal-plan-controls">
+                    <p>Each meal includes editable foods, portions, and structured alternatives.</p>
+                    <label class="meal-count-control" for="mealCountSelect">
+                        <span>Meals per day</span>
+                        <select id="mealCountSelect" aria-label="Meals per day">
+                            <option value="3">3 meals</option>
+                            <option value="4">4 meals</option>
+                            <option value="5">5 meals</option>
+                            <option value="6">6 meals</option>
+                            <option value="7" selected>7 meals</option>
+                        </select>
+                    </label>
+                </div>
             </div>
             <div class="meal-card-grid" id="mealCardGrid"></div>
         </section>
