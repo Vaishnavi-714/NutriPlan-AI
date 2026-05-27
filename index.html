@@ -3,404 +3,439 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NutriCopilot — AI Dietitian Assistant</title>
-    <link rel="stylesheet" href="style.css">
+    <title>NutriCopilot - AI Clinical Nutrition Assistant</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800&display=swap" rel="stylesheet">
-    <style>
-        .dashboard-transition {
-            position: fixed;
-            inset: 0;
-            background: #132233;
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 1;
-            pointer-events: all;
-            transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        .dashboard-transition.done {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .dash-transition-content {
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 28px;
-            animation: dtFadeIn 0.5s ease;
-        }
-        @keyframes dtFadeIn {
-            from { opacity: 0; transform: translateY(14px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .dash-transition-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 650;
-            font-size: 17px;
-            color: rgba(255,255,255,0.92);
-            letter-spacing: -0.3px;
-        }
-        .dt-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #296FA3 0%, #1A4867 100%);
-            color: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(41, 111, 163, 0.40);
-        }
-        .dash-transition-bar {
-            width: 200px;
-            height: 2px;
-            background: rgba(255,255,255,0.08);
-            border-radius: 1px;
-            overflow: hidden;
-        }
-        .dash-transition-progress {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, #296FA3, #43AFA3, #F6D85B);
-            border-radius: 1px;
-            animation: dtProgress 1.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-        @keyframes dtProgress {
-            0% { width: 0%; }
-            40% { width: 60%; }
-            100% { width: 100%; }
-        }
-        .dash-transition-text {
-            font-size: 12.5px;
-            color: rgba(255,255,255,0.35);
-            letter-spacing: 0.2px;
-        }
-    </style>
+    <link rel="stylesheet" href="landing.css">
 </head>
 <body>
-    <!-- PAGE TRANSITION OVERLAY -->
-    <div class="dashboard-transition" id="dashTransition">
-        <div class="dash-transition-content">
-            <div class="dash-transition-logo">
-                <div class="dt-icon">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                        <circle cx="12" cy="12" r="3" fill="currentColor" opacity="0.2"/>
+    <div class="page-transition" id="pageTransition"></div>
+
+    <nav class="nav" id="nav">
+        <div class="nav-inner">
+            <a href="landing.html" class="nav-logo" aria-label="NutriCopilot home">
+                <span class="brand-mark">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+                        <path d="M8.2 15.8c1.1 1 2.4 1.5 3.8 1.5 1.5 0 2.8-.5 3.8-1.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
                     </svg>
-                </div>
+                </span>
                 <span>NutriCopilot</span>
+            </a>
+
+            <div class="nav-links" id="navLinks">
+                <a href="#features">AI Features</a>
+                <a href="#workflow">Clinical Workflow</a>
+                <a href="#product">Product</a>
+                <a href="#security">Security</a>
+                <a href="#testimonials">Testimonials</a>
+                <a href="#faq">FAQ</a>
             </div>
-            <div class="dash-transition-bar">
-                <div class="dash-transition-progress"></div>
+
+            <div class="nav-actions">
+                <a href="login.html" class="nav-login">Login</a>
+                <a href="signup.html" class="nav-cta">Start Free</a>
             </div>
-            <p class="dash-transition-text">Preparing your workspace...</p>
+
+            <button class="nav-mobile-toggle" id="mobileNavToggle" type="button" aria-label="Open menu" aria-expanded="false">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="mobile-nav-drawer hidden" id="mobileNavDrawer">
+        <a href="#features">AI Features</a>
+        <a href="#workflow">Clinical Workflow</a>
+        <a href="#product">Product</a>
+        <a href="#security">Security</a>
+        <a href="#testimonials">Testimonials</a>
+        <a href="#faq">FAQ</a>
+        <div class="mobile-nav-actions">
+            <a href="login.html" class="nav-login">Login</a>
+            <a href="signup.html" class="nav-cta">Start Free</a>
         </div>
     </div>
 
-    <div class="app-container">
-        <!-- CENTER MAIN AREA -->
-        <main class="main-content" id="mainContent">
+    <main>
+        <section class="hero section-shell">
+            <div class="hero-bg hero-bg-one"></div>
+            <div class="hero-bg hero-bg-two"></div>
 
-            <header class="workspace-topbar">
-                <div class="patient-controls">
-                    <div class="patient-select-wrap" id="patientSelectWrap">
-                        <button class="patient-select-btn" id="patientSelectBtn" aria-haspopup="listbox" aria-expanded="false">
-                            <span class="top-patient-avatar" id="topPatientAvatar">RS</span>
-                            <span class="top-patient-label" id="topPatientLabel">Rajesh Sharma</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </button>
-                        <div class="patient-dropdown-menu hidden" id="patientDropdownMenu" role="listbox"></div>
-                    </div>
-
-                    <div class="patient-search-wrap">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <path d="M21 21l-4.35-4.35"/>
-                        </svg>
-                        <input class="patient-search" id="topPatientSearch" type="search" placeholder="Search patients...">
-                        <div class="patient-search-results hidden" id="patientSearchResults"></div>
-                    </div>
+            <div class="hero-copy">
+                <div class="eyebrow reveal">
+                    <span class="pulse-dot"></span>
+                    AI assistant for doctors and clinical nutrition teams
                 </div>
-
-                <div class="workspace-brand">
-                    <div class="workspace-brand-icon">
-                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                            <circle cx="12" cy="12" r="10"/>
-                            <path d="M12 6v6l4 2" stroke-linecap="round"/>
-                        </svg>
-                    </div>
-                    <span>NutriCopilot</span>
-                </div>
-
-                <div class="workspace-actions">
-                    <a class="workspace-nav-btn" id="backHomeBtn" href="landing.html" aria-label="Back to Home">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-                            <path d="M3 11.5 12 4l9 7.5"/>
-                            <path d="M5 10.5V20h14v-9.5"/>
-                        </svg>
-                        <span>Home</span>
+                <h1 class="hero-title reveal">AI Clinical Diet Plans from Patient Reports in Minutes</h1>
+                <p class="hero-subtitle reveal">
+                    NutriCopilot helps doctors extract biomarkers, review patient context, and approve personalized nutrition prescriptions faster.
+                </p>
+                <div class="hero-actions reveal">
+                    <a href="signup.html" class="btn btn-primary">
+                        Start Free
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-7-7 7 7-7 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </a>
-                    <div class="doctor-top-profile">
-                        <span class="doctor-status-dot"></span>
-                        <span>Dr. Priya Sharma</span>
-                    </div>
-                    <button class="workspace-nav-btn logout" id="logoutTopBtn" type="button" aria-label="Logout">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-                            <path d="M10 17l5-5-5-5"/>
-                            <path d="M15 12H3"/>
-                            <path d="M21 3v18"/>
-                        </svg>
-                        <span>Logout</span>
+                    <button class="btn btn-secondary" id="watchDemoBtn" type="button">
+                        View Workflow
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 18 6-6-6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     </button>
                 </div>
-            </header>
-
-            <!-- Welcome State -->
-            <div class="welcome-state" id="welcomeState">
-                <div class="greeting-section">
-                    <h1 class="greeting" id="greeting">Good Evening, Dr. Sharma</h1>
-                    <p class="greeting-sub">Begin patient intake or review a clinical nutrition prescription</p>
+                <div class="hero-metrics reveal">
+                    <div><strong>Report-based</strong><span>Clinical recommendations</span></div>
+                    <div><strong>Doctor-reviewed</strong><span>Human approval before final plan</span></div>
+                    <div><strong>Risk-aware</strong><span>Biomarker and context signals</span></div>
                 </div>
+            </div>
 
-                <div class="copilot-empty-note">
-                    <strong>Upload a clinical report to begin AI-assisted nutrition planning.</strong>
-                    <span>After report analysis, complete patient context to generate a weekly diet plan.</span>
-                    <div class="copilot-visual-strip" aria-hidden="true">
-                        <i class="visual-meal visual-report"></i>
-                        <i class="visual-meal visual-bowl"></i>
-                        <i class="visual-meal visual-plate"></i>
+            <div class="hero-visual reveal" aria-label="NutriCopilot product mockup">
+                <div class="orbit-card orbit-card-left">
+                    <span class="chip-icon red"></span>
+                    <div>
+                        <strong>HbA1c detected</strong>
+                        <small>8.2 percent - high risk</small>
+                    </div>
+                </div>
+                <div class="orbit-card orbit-card-right">
+                    <span class="chip-icon amber"></span>
+                    <div>
+                        <strong>10 abnormal biomarkers</strong>
+                        <small>Ready for doctor review</small>
+                    </div>
+                </div>
+                <div class="orbit-card orbit-card-bottom">
+                    <span class="chip-icon green"></span>
+                    <div>
+                        <strong>Approved by doctor</strong>
+                        <small>Final plan export-ready</small>
                     </div>
                 </div>
 
-                <div class="prompt-container" id="promptContainer">
-                    <div class="prompt-box">
-                        <div class="prompt-upload-area" id="dropZone">
-                            <div class="drop-indicator" id="dropIndicator">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                    <polyline points="17,8 12,3 7,8"/>
-                                    <line x1="12" y1="3" x2="12" y2="15"/>
-                                </svg>
-                                <span>Drop clinical report here</span>
+                <div class="product-frame">
+                    <div class="frame-top">
+                        <div class="window-dots"><span></span><span></span><span></span></div>
+                        <span class="secure-pill">Clinical workspace</span>
+                    </div>
+                    <div class="app-mock">
+                        <aside class="mock-sidebar">
+                            <div class="mock-logo-row"><span></span><b></b></div>
+                            <button class="mock-new">New Patient</button>
+                            <div class="mock-patient active"><span>RS</span><p><b>Rajesh Sharma</b><small>10 min ago</small></p></div>
+                            <div class="mock-patient"><span>PM</span><p><b>Priya Mehta</b><small>1 hr ago</small></p></div>
+                            <div class="mock-patient"><span>NK</span><p><b>Neha Kapoor</b><small>23 May 2026</small></p></div>
+                        </aside>
+                        <section class="mock-main">
+                            <div class="mock-header">
+                                <div>
+                                    <span class="mock-kicker">Patient record</span>
+                                    <h3>Diabetes and hypertension review</h3>
+                                    <p>Male, 52 yrs - BMI 28.4 - Report uploaded</p>
+                                </div>
+                                <span class="ai-status"><i></i> AI analyzing</span>
                             </div>
-                        </div>
-                        <div class="prompt-input-wrapper">
-                            <button class="prompt-action-btn upload-btn" id="uploadBtn" title="Upload Report">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
-                                </svg>
-                            </button>
-                            <textarea class="prompt-input" id="promptInput" placeholder="Add clinical notes or upload patient report..." rows="1"></textarea>
-                            <button class="prompt-action-btn voice-btn" id="voiceBtn" title="Voice Input">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-                                    <line x1="12" y1="19" x2="12" y2="23"/>
-                                    <line x1="8" y1="23" x2="16" y2="23"/>
-                                </svg>
-                            </button>
-                            <button class="generate-btn" id="generateBtn" title="Generate">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="22" y1="2" x2="11" y2="13"/>
-                                    <polygon points="22,2 15,22 11,13 2,9"/>
-                                </svg>
-                            </button>
-                        </div>
+                            <div class="biomarker-grid">
+                                <div class="bio-card danger"><span>HbA1c</span><strong>8.2%</strong><small>Above normal</small></div>
+                                <div class="bio-card warning"><span>BP</span><strong>142/92</strong><small>Elevated</small></div>
+                                <div class="bio-card low"><span>Vit D</span><strong>12 ng</strong><small>Deficient</small></div>
+                            </div>
+                            <div class="risk-banner">
+                                <span>Risk flags</span>
+                                <b>Diabetes risk, high LDL, low vitamin D</b>
+                            </div>
+                            <div class="plan-preview">
+                                <div class="plan-head">
+                                    <span>Weekly clinical diet plan</span>
+                                    <b>Doctor editable</b>
+                                </div>
+                                <div class="meal-row"><span>Breakfast</span><p>Moong chilla, curd alternative, green tea</p><b>320 kcal</b></div>
+                                <div class="meal-row"><span>Lunch</span><p>Bajra roti, dal, salad, low sodium sabzi</p><b>480 kcal</b></div>
+                                <div class="meal-row"><span>Dinner</span><p>Quinoa khichdi, sauteed vegetables</p><b>410 kcal</b></div>
+                            </div>
+                            <div class="approval-strip">
+                                <span class="approval-check">✓</span>
+                                <p><strong>Plan ready for approval</strong><small>Human review required before final prescription</small></p>
+                                <button>Approve</button>
+                            </div>
+                        </section>
+                        <aside class="mock-context">
+                            <span class="context-label">Patient context</span>
+                            <h4>Clinical restrictions</h4>
+                            <div class="context-chip">Low GI</div>
+                            <div class="context-chip">Low sodium</div>
+                            <div class="context-chip">No refined sugar</div>
+                            <div class="context-note">
+                                <strong>Doctor note</strong>
+                                <p>Prioritize glycemic control and lipid-friendly meals.</p>
+                            </div>
+                        </aside>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Upload Review State -->
-            <div class="upload-review-state hidden" id="uploadReviewState">
-                <div class="upload-review-content" id="uploadReviewContent">
-                    <!-- Dynamically populated by JS -->
-                </div>
+        <section class="trust-strip section-shell reveal" aria-label="Trust and workflow badges">
+            <span>Built for clinical review</span>
+            <div class="trust-badges">
+                <div>Doctor Reviewed</div>
+                <div>Clinical Workflow Ready</div>
+                <div>Privacy First</div>
+                <div>Report-Based Recommendations</div>
+                <div>AI Assisted</div>
+                <div>Human-in-the-loop Approval</div>
             </div>
+        </section>
 
-            <!-- Chat/Conversation State -->
-            <div class="chat-state hidden" id="chatState">
-                <div class="chat-messages" id="chatMessages"></div>
+        <section class="section-shell problem-section">
+            <div class="section-heading reveal">
+                <span class="section-tag">Why it matters</span>
+                <h2>Clinical diet planning has too much manual work between report and prescription.</h2>
+                <p>Doctors need speed, but not at the cost of clinical judgment. NutriCopilot turns report findings into a review-ready workspace.</p>
+            </div>
+            <div class="problem-grid">
+                <article class="premium-card reveal">
+                    <span class="card-icon">01</span>
+                    <h3>Manual report review takes time</h3>
+                    <p>Lab values, ranges, and context often sit across PDFs and notes, slowing down the first clinical review.</p>
+                </article>
+                <article class="premium-card reveal">
+                    <span class="card-icon">02</span>
+                    <h3>Biomarkers are scattered</h3>
+                    <p>Risk signals can be missed when HbA1c, BP, lipids, renal markers, and deficiencies are not organized together.</p>
+                </article>
+                <article class="premium-card reveal">
+                    <span class="card-icon">03</span>
+                    <h3>Diet plans become repetitive</h3>
+                    <p>Clinical teams spend time rebuilding similar weekly plans instead of reviewing and personalizing them.</p>
+                </article>
+                <article class="premium-card reveal">
+                    <span class="card-icon">04</span>
+                    <h3>Doctors need editable AI outputs</h3>
+                    <p>AI should prepare the draft, but the clinical team must modify, approve, and own the final prescription.</p>
+                </article>
+            </div>
+        </section>
 
-                <div class="chat-input-container">
-                    <div class="prompt-box">
-                        <div class="prompt-input-wrapper">
-                            <button class="prompt-action-btn upload-btn" id="chatUploadBtn" title="Upload Report">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
-                                </svg>
-                            </button>
-                            <textarea class="prompt-input" id="chatInput" placeholder="Ask NutriCopilot to refine the diet plan..." rows="1"></textarea>
-                            <button class="generate-btn" id="chatSendBtn" title="Send">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <line x1="22" y1="2" x2="11" y2="13"/>
-                                    <polygon points="22,2 15,22 11,13 2,9"/>
-                                </svg>
-                            </button>
+        <section class="workflow-section section-shell" id="workflow">
+            <div class="section-heading reveal">
+                <span class="section-tag">Clinical workflow</span>
+                <h2>From patient report to doctor-approved nutrition prescription.</h2>
+                <p>A structured, human-in-the-loop workflow for report-based clinical diet planning.</p>
+            </div>
+            <div class="workflow-line">
+                <article class="workflow-step reveal">
+                    <span>1</span>
+                    <h3>Upload patient report</h3>
+                    <p>Add clinical reports and notes into the patient workspace.</p>
+                </article>
+                <article class="workflow-step reveal">
+                    <span>2</span>
+                    <h3>Extract biomarkers</h3>
+                    <p>Surface key markers, abnormalities, and risk labels for review.</p>
+                </article>
+                <article class="workflow-step reveal">
+                    <span>3</span>
+                    <h3>Review context</h3>
+                    <p>Confirm allergies, restrictions, diagnosis context, and preferences.</p>
+                </article>
+                <article class="workflow-step reveal">
+                    <span>4</span>
+                    <h3>Approve diet plan</h3>
+                    <p>Edit, approve, and prepare an export-ready clinical diet plan.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="product-section section-shell" id="product">
+            <div class="section-heading reveal">
+                <span class="section-tag">Product showcase</span>
+                <h2>A premium workspace for clinical nutrition teams.</h2>
+                <p>Designed around the real moments doctors care about: findings, risk, context, recommendations, and approval.</p>
+            </div>
+            <div class="showcase-grid">
+                <article class="showcase-large reveal">
+                    <div class="showcase-toolbar">
+                        <span>Patient workspace</span>
+                        <b>Synced locally</b>
+                    </div>
+                    <div class="workspace-preview">
+                        <div class="workspace-card">
+                            <small>Report findings</small>
+                            <strong>16 biomarkers detected</strong>
+                            <p>HbA1c, fasting sugar, cholesterol, BP, vitamin D, creatinine.</p>
+                        </div>
+                        <div class="workspace-card dark">
+                            <small>Risk-aware summary</small>
+                            <strong>4 clinical flags</strong>
+                            <p>Diabetes risk, hypertension, vitamin D deficiency, high LDL.</p>
                         </div>
                     </div>
-                </div>
+                    <div class="week-tabs">
+                        <span class="active">Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+                    </div>
+                </article>
+                <article class="showcase-card reveal">
+                    <span class="mini-label">Biomarker review</span>
+                    <h3>Abnormal values grouped clearly</h3>
+                    <div class="mini-meter"><span style="width:78%"></span></div>
+                    <p>Clinicians see what needs attention before a plan is approved.</p>
+                </article>
+                <article class="showcase-card reveal">
+                    <span class="mini-label">Doctor approval</span>
+                    <h3>No final plan without review</h3>
+                    <div class="approval-modal-mini">
+                        <b>Approve clinical plan?</b>
+                        <small>Editable recommendation draft</small>
+                        <button>Approve plan</button>
+                    </div>
+                </article>
+                <article class="showcase-card reveal">
+                    <span class="mini-label">Export ready</span>
+                    <h3>Prescription handoff feels polished</h3>
+                    <p>Prepare a clean clinical diet plan after the doctor signs off.</p>
+                </article>
             </div>
-            <input type="file" id="fileInput" accept=".pdf,.jpg,.png,.jpeg" hidden>
-        </main>
+        </section>
 
-    </div>
+        <section class="features-section section-shell" id="features">
+            <div class="section-heading reveal">
+                <span class="section-tag">AI features</span>
+                <h2>Everything needed for report-driven clinical diet planning.</h2>
+                <p>Premium AI assistance with the controls clinical teams expect.</p>
+            </div>
+            <div class="feature-grid">
+                <article class="feature-card reveal"><span></span><h3>Biomarker Extraction</h3><p>Turn uploaded reports into structured markers for review.</p></article>
+                <article class="feature-card reveal"><span></span><h3>Risk Flag Detection</h3><p>Highlight clinical risks with clear labels and priority.</p></article>
+                <article class="feature-card reveal"><span></span><h3>Patient Context Review</h3><p>Review dietary restrictions, preferences, and notes in one place.</p></article>
+                <article class="feature-card reveal"><span></span><h3>Weekly Diet Plan Generation</h3><p>Prepare doctor-editable weekly meal schedules faster.</p></article>
+                <article class="feature-card reveal"><span></span><h3>Doctor Editable Recommendations</h3><p>Modify AI output before any final prescription is approved.</p></article>
+                <article class="feature-card reveal"><span></span><h3>Clinical Notes and Restrictions</h3><p>Keep recommendations aligned with allergies and medical context.</p></article>
+                <article class="feature-card reveal"><span></span><h3>Report Findings Summary</h3><p>Summarize key findings for faster clinical orientation.</p></article>
+                <article class="feature-card reveal"><span></span><h3>Export and Approval Workflow</h3><p>Move from draft to approved plan with a clean handoff.</p></article>
+            </div>
+        </section>
 
-    <!-- Mobile overlay -->
-    <div class="mobile-overlay hidden" id="mobileOverlay"></div>
+        <section class="doctor-control section-shell">
+            <div class="control-copy reveal">
+                <span class="section-tag">Doctor control</span>
+                <h2>AI suggests. Doctor decides.</h2>
+                <p>NutriCopilot is built for clinical oversight. AI prepares the draft; the doctor reviews context, edits the recommendation, and approves the final plan.</p>
+                <a href="signup.html" class="btn btn-primary">Start reviewing plans</a>
+            </div>
+            <div class="control-panel reveal">
+                <div class="control-row active"><span>AI draft generated</span><b>Ready</b></div>
+                <div class="control-row"><span>Doctor edits meals</span><b>Editable</b></div>
+                <div class="control-row"><span>Context verified</span><b>Reviewed</b></div>
+                <div class="control-row final"><span>Clinical plan approved</span><b>Signed off</b></div>
+            </div>
+        </section>
 
-    <!-- Add Patient Modal -->
-    <div class="add-patient-overlay hidden" id="addPatientOverlay" aria-modal="true" role="dialog" aria-labelledby="addPatientTitle">
-        <form class="add-patient-dialog" id="addPatientForm">
-            <div class="add-patient-header">
+        <section class="security-section section-shell" id="security">
+            <div class="security-card reveal">
                 <div>
-                    <span class="context-review-eyebrow">New Patient</span>
-                    <h2 id="addPatientTitle">Create Patient</h2>
-                    <p>Add a patient record to start a clinical nutrition workflow.</p>
+                    <span class="section-tag">Responsible AI</span>
+                    <h2>Designed for secure, review-first clinical workflows.</h2>
+                    <p>Use AI assistance without surrendering clinical decision-making. NutriCopilot keeps risk labels, patient context, and approval steps visible.</p>
                 </div>
-                <button class="context-review-close" id="addPatientClose" type="button" aria-label="Close add patient form">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 6L6 18M6 6l12 12"/>
-                    </svg>
-                </button>
+                <div class="security-list">
+                    <div><span>✓</span> Human-in-the-loop approval</div>
+                    <div><span>✓</span> No final plan without doctor review</div>
+                    <div><span>✓</span> Clear risk labels and clinical context</div>
+                    <div><span>✓</span> Designed for documentation workflows</div>
+                </div>
             </div>
-            <div class="add-patient-body">
-                <label><span>Patient name</span><input name="name" required placeholder="Full name"></label>
-                <label><span>Age</span><input name="age" inputmode="numeric" placeholder="Age"></label>
-                <label><span>Gender</span><select name="gender"><option>Female</option><option>Male</option><option>Other</option></select></label>
-                <label><span>Phone/email</span><input name="contact" placeholder="Optional"></label>
-                <label><span>Medical condition</span><input name="condition" placeholder="e.g. Diabetes, hypertension"></label>
-                <label><span>Diet preference</span><select name="diet"><option>Vegetarian</option><option>Non-vegetarian</option><option>Vegan</option><option>Eggetarian</option><option>Jain</option><option>Other</option></select></label>
-                <label class="add-patient-wide"><span>Notes</span><textarea name="notes" placeholder="Clinical notes or nutrition context"></textarea></label>
-            </div>
-            <div class="add-patient-actions">
-                <button class="ctx-cancel-btn" id="addPatientCancel" type="button">Cancel</button>
-                <button class="ctx-approve-btn" type="submit">Create Patient</button>
-            </div>
-        </form>
-    </div>
+        </section>
 
-    <!-- Patient Context Review Modal -->
-    <div class="context-review-overlay hidden" id="contextReviewOverlay" aria-modal="true" role="dialog" aria-labelledby="contextReviewTitle">
-        <div class="context-review-dialog" id="contextReviewDialog">
-            <div class="context-review-header">
-                <div>
-                    <span class="context-review-eyebrow">Patient Context</span>
-                    <h2 id="contextReviewTitle">Complete Patient Context</h2>
-                    <p>Complete preferences, restrictions, routine, and doctor notes before plan generation</p>
+        <section class="testimonials-section section-shell" id="testimonials">
+            <div class="section-heading reveal">
+                <span class="section-tag">Social proof</span>
+                <h2>Designed for clinical nutrition teams.</h2>
+                <p>Demo positioning for report-based nutrition workflows, doctor review, and faster plan preparation.</p>
+            </div>
+            <div class="testimonial-grid">
+                <article class="testimonial-card reveal">
+                    <p>"The workflow is built around how clinical teams review reports, context, and recommendations before approval."</p>
+                    <span>Sample feedback - clinical nutrition workflow</span>
+                </article>
+                <article class="testimonial-card reveal">
+                    <p>"A useful structure for turning report findings into diet-plan drafts that doctors can edit."</p>
+                    <span>Sample feedback - doctor review workflow</span>
+                </article>
+                <article class="testimonial-card reveal">
+                    <p>"The human approval step makes the AI assistance feel appropriate for clinical use."</p>
+                    <span>Sample feedback - responsible AI workflow</span>
+                </article>
+            </div>
+        </section>
+
+        <section class="faq-section section-shell" id="faq">
+            <div class="section-heading reveal">
+                <span class="section-tag">FAQ</span>
+                <h2>Questions doctors usually ask.</h2>
+            </div>
+            <div class="faq-list">
+                <details class="faq-item reveal" open>
+                    <summary>Is NutriCopilot for doctors or patients?</summary>
+                    <p>NutriCopilot is designed for doctors, dietitians, and clinical nutrition teams. It is not a consumer food diary or calorie tracker.</p>
+                </details>
+                <details class="faq-item reveal">
+                    <summary>Does AI automatically approve diet plans?</summary>
+                    <p>No. AI can generate a draft recommendation, but the doctor reviews, edits, and approves the final clinical diet plan.</p>
+                </details>
+                <details class="faq-item reveal">
+                    <summary>Can doctors edit recommendations?</summary>
+                    <p>Yes. Recommendations are designed to be reviewed and modified before approval.</p>
+                </details>
+                <details class="faq-item reveal">
+                    <summary>Does it work with uploaded reports?</summary>
+                    <p>The prototype showcases report upload, biomarker extraction, risk flag review, and plan generation flows.</p>
+                </details>
+                <details class="faq-item reveal">
+                    <summary>Can weekly diet plans be generated?</summary>
+                    <p>Yes. NutriCopilot is positioned around doctor-editable weekly clinical diet plans and meal schedules.</p>
+                </details>
+                <details class="faq-item reveal">
+                    <summary>Is this a replacement for clinical judgment?</summary>
+                    <p>No. It is an AI-assisted workflow tool. Clinical judgment and final approval remain with the doctor.</p>
+                </details>
+            </div>
+        </section>
+
+        <section class="final-cta section-shell">
+            <div class="final-cta-card reveal">
+                <span class="section-tag">Ready for your clinical workflow</span>
+                <h2>Start building clinical diet plans faster.</h2>
+                <p>Review reports, identify risk signals, personalize recommendations, and approve nutrition prescriptions from one premium workspace.</p>
+                <div class="final-actions">
+                    <a href="signup.html" class="btn btn-primary">Get Started</a>
+                    <a href="login.html" class="btn btn-secondary">Login</a>
                 </div>
-                <button class="context-review-close" id="contextReviewClose" aria-label="Close patient context review">
-                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 6L6 18M6 6l12 12"/>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-inner">
+            <a href="landing.html" class="nav-logo">
+                <span class="brand-mark">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/>
+                        <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
                     </svg>
-                </button>
+                </span>
+                <span>NutriCopilot</span>
+            </a>
+            <div class="footer-links">
+                <a href="#features">Product</a>
+                <a href="#workflow">Workflow</a>
+                <a href="#security">Security</a>
+                <a href="login.html">Login</a>
+                <a href="signup.html">Get Started</a>
             </div>
-            <div class="context-review-body" id="contextReviewModalBody">
-                <!-- populated by JS -->
-            </div>
-            <div class="context-review-actions ctx-review-foot" id="ctxReviewFooter">
-                <!-- populated by JS -->
-            </div>
+            <p>© 2026 NutriCopilot. Static prototype for clinical nutrition workflow demos.</p>
         </div>
-    </div>
+    </footer>
 
-    <!-- Biomarker Review Modal -->
-    <div class="bm-drawer-overlay hidden" id="bmDrawerOverlay">
-        <div class="bm-drawer" id="bmDrawer">
-            <div class="bm-drawer-header">
-                <div class="bm-drawer-title-block">
-                    <h3>Rajesh Sharma Biomarkers</h3>
-                    <div class="bm-drawer-summary">
-                        <span class="bm-total-count">16 detected</span>
-                        <span class="bm-abnormal-count">10 abnormal</span>
-                    </div>
-                </div>
-                <button class="bm-drawer-close" id="bmDrawerClose">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 6L6 18M6 6l12 12"/>
-                    </svg>
-                </button>
-            </div>
-            <div class="bm-group-tabs" id="bmGroupTabs">
-                <button class="bm-group-tab active" data-group="metabolic">Metabolic</button>
-                <button class="bm-group-tab" data-group="cardiovascular">Cardiovascular</button>
-                <button class="bm-group-tab" data-group="nutritional">Nutritional</button>
-                <button class="bm-group-tab" data-group="kidney">Kidney</button>
-                <button class="bm-group-tab" data-group="liver">Liver</button>
-            </div>
-            <div class="bm-drawer-body" id="bmDrawerBody">
-                <!-- populated by JS -->
-            </div>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-    <script>
-        // Dashboard entry: fade out the loading screen
-        window.addEventListener('DOMContentLoaded', () => {
-            const t = document.getElementById('dashTransition');
-            if (t) {
-                setTimeout(() => {
-                    t.classList.add('done');
-                    setTimeout(() => t.remove(), 700);
-                }, 1800);
-            }
-        });
-    </script>
-    <script>
-    (function () {
-        const profileArea = document.getElementById('sidebarProfile');
-        const menu = document.getElementById('profileMenu');
-        const profileBtn = document.getElementById('profileMenuBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (!profileArea || !menu) return;
-
-        function openMenu() {
-            const rect = profileArea.getBoundingClientRect();
-            menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
-            menu.style.left = rect.left + 'px';
-            menu.style.width = rect.width + 'px';
-            menu.classList.add('is-open');
-            if (profileBtn) profileBtn.setAttribute('aria-expanded', 'true');
-            profileArea.classList.add('menu-open');
-        }
-
-        function closeMenu() {
-            menu.classList.remove('is-open');
-            if (profileBtn) profileBtn.setAttribute('aria-expanded', 'false');
-            profileArea.classList.remove('menu-open');
-        }
-
-        profileArea.addEventListener('click', function (e) {
-            e.stopPropagation();
-            menu.classList.contains('is-open') ? closeMenu() : openMenu();
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!profileArea.contains(e.target) && !menu.contains(e.target)) closeMenu();
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeMenu();
-        });
-
-        logoutBtn && logoutBtn.addEventListener('click', function () {
-            closeMenu();
-            if (typeof navigateTo === 'function') navigateTo('login.html');
-            else window.location.href = 'login.html';
-        });
-
-        const settingsItem = document.getElementById('settingsMenuItem');
-        settingsItem && settingsItem.addEventListener('click', closeMenu);
-    })();
-    </script>
+    <script src="landing.js"></script>
 </body>
 </html>
