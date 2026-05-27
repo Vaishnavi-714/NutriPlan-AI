@@ -100,7 +100,7 @@ document.querySelectorAll('.social-btn').forEach(btn => {
         btn.style.opacity = '0.6';
         btn.style.pointerEvents = 'none';
         setTimeout(() => {
-            navigateTo('index.html');
+            navigateTo(signupForm ? 'workspace.html' : 'index.html');
         }, 1000);
     });
 });
