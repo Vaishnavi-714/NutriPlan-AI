@@ -7,6 +7,7 @@
 // STATE
 // ============================================
 const state = {
+    selectedPatient: null,
     currentPatient: null,
     activePatientId: null,
     patientLoadToken: 0,
@@ -266,6 +267,8 @@ const els = {
     patientSearchResults: $('#patientSearchResults'),
     topPatientAvatar: $('#topPatientAvatar'),
     topPatientLabel: $('#topPatientLabel'),
+    choosePatientBtn: $('#choosePatientBtn'),
+    choosePatientMenu: $('#choosePatientMenu'),
     addPatientOverlay: $('#addPatientOverlay'),
     addPatientForm: $('#addPatientForm'),
     addPatientClose: $('#addPatientClose'),
@@ -289,14 +292,16 @@ const els = {
 function init() {
     setGreeting();
     restoreSidebarState();
+    renderBlankWorkspace();
     renderPatientSelector();
-    selectPatientRecord('1');
+    renderChoosePatientMenu();
     bindEvents();
     autoResizeTextareas();
     initSidebarTooltips();
 }
 
 function setGreeting() {
+    if (!els.greeting) return;
     const hour = new Date().getHours();
     let greet = 'Good Evening';
     if (hour < 12) greet = 'Good Morning';
@@ -351,6 +356,7 @@ function bindEvents() {
     // Search
     els.patientSearch?.addEventListener('input', handlePatientSearch);
     els.patientSelectBtn?.addEventListener('click', togglePatientDropdown);
+    els.choosePatientBtn?.addEventListener('click', toggleChoosePatientMenu);
     els.topPatientSearch?.addEventListener('input', handleTopPatientSearch);
     els.topPatientSearch?.addEventListener('focus', handleTopPatientSearch);
     els.addPatientClose?.addEventListener('click', closeAddPatientModal);
@@ -362,24 +368,26 @@ function bindEvents() {
     document.addEventListener('click', handleGlobalPatientControlClick);
 
     // Prompt actions
-    els.generateBtn.addEventListener('click', handlePromptSubmit);
-    els.chatSendBtn.addEventListener('click', handleChatSubmit);
-    els.uploadBtn.addEventListener('click', () => els.fileInput.click());
-    els.chatUploadBtn.addEventListener('click', () => els.fileInput.click());
-    els.voiceBtn.addEventListener('click', handleVoice);
-    els.fileInput.addEventListener('change', handleFileUpload);
+    els.generateBtn?.addEventListener('click', handlePromptSubmit);
+    els.chatSendBtn?.addEventListener('click', handleChatSubmit);
+    els.uploadBtn?.addEventListener('click', () => els.fileInput.click());
+    els.chatUploadBtn?.addEventListener('click', () => {
+        if (requirePatientSelection()) els.fileInput.click();
+    });
+    els.voiceBtn?.addEventListener('click', handleVoice);
+    els.fileInput?.addEventListener('change', handleFileUpload);
 
     document.getElementById('logoutTopBtn')?.addEventListener('click', handleLogout);
 
     // Keyboard
-    els.promptInput.addEventListener('keydown', (e) => {
+    els.promptInput?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handlePromptSubmit();
         }
     });
 
-    els.chatInput.addEventListener('keydown', (e) => {
+    els.chatInput?.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleChatSubmit();
@@ -401,6 +409,7 @@ function bindEvents() {
         e.preventDefault();
         dropZone?.classList.remove('dragover');
         if (e.dataTransfer.files.length > 0) {
+            if (!requirePatientSelection()) return;
             simulateReportUpload(e.dataTransfer.files[0].name);
         }
     });
@@ -474,6 +483,34 @@ function getActivePatientRecord() {
     return state.activePatientId ? PATIENT_RECORDS[state.activePatientId] : null;
 }
 
+function hasSelectedPatient() {
+    return state.selectedPatient !== null;
+}
+
+function requirePatientSelection(openChooser = true) {
+    if (hasSelectedPatient()) return true;
+    renderBlankWorkspace();
+    if (openChooser) openChoosePatientMenu();
+    return false;
+}
+
+function renderBlankWorkspace() {
+    state.selectedPatient = null;
+    state.currentPatient = null;
+    state.activePatientId = null;
+    state.patientLoadToken++;
+    resetClinicalState();
+
+    els.welcomeState?.classList.remove('hidden');
+    els.uploadReviewState?.classList.add('hidden');
+    els.chatState?.classList.add('hidden');
+    if (els.uploadReviewContent) els.uploadReviewContent.innerHTML = '';
+    if (els.chatMessages) els.chatMessages.innerHTML = '';
+    closePatientDropdown();
+    closeChoosePatientMenu();
+    updateTopPatientControl(null);
+}
+
 function getPatientContextDetails(record = getActivePatientRecord()) {
     if (!record) {
         return {
@@ -539,7 +576,7 @@ function getPatientEntries() {
 
 function renderPatientSelector() {
     if (!els.patientDropdownMenu) return;
-    const activeId = state.activePatientId || '1';
+    const activeId = state.activePatientId;
     els.patientDropdownMenu.innerHTML = `
         <div class="patient-dropdown-list">
             ${getPatientEntries().map(([id, record]) => createPatientOptionHTML(id, record, id === activeId)).join('')}
@@ -571,18 +608,68 @@ function createPatientOptionHTML(id, record, active = false) {
     `;
 }
 
+function renderChoosePatientMenu() {
+    if (!els.choosePatientMenu) return;
+    els.choosePatientMenu.innerHTML = `
+        <div class="patient-dropdown-list">
+            ${getPatientEntries().map(([id, record]) => createPatientOptionHTML(id, record, id === state.activePatientId)).join('')}
+        </div>
+        <button class="patient-add-option" data-action="add-patient" type="button">+ Create New Patient</button>
+    `;
+    els.choosePatientMenu.querySelectorAll('.patient-option').forEach(option => {
+        option.addEventListener('click', () => {
+            selectPatientRecord(option.dataset.id);
+            closeChoosePatientMenu();
+        });
+    });
+    els.choosePatientMenu.querySelector('[data-action="add-patient"]')?.addEventListener('click', () => {
+        closeChoosePatientMenu();
+        openAddPatientModal();
+    });
+}
+
 function updateTopPatientControl(record) {
-    if (!record) return;
-    if (els.topPatientAvatar) els.topPatientAvatar.textContent = record.initials;
-    if (els.topPatientLabel) els.topPatientLabel.textContent = record.name;
+    const isSelected = Boolean(record);
+    const wrap = document.getElementById('patientSelectWrap');
+    wrap?.classList.toggle('is-disabled', !isSelected);
+    els.patientSelectBtn?.toggleAttribute('disabled', !isSelected);
+    els.topPatientSearch?.toggleAttribute('disabled', !isSelected);
+
+    if (els.topPatientAvatar) els.topPatientAvatar.textContent = record ? record.initials : '--';
+    if (els.topPatientLabel) els.topPatientLabel.textContent = record ? record.name : 'No patient selected';
+    if (!isSelected) {
+        els.patientSearchResults?.classList.add('hidden');
+        if (els.patientSearchResults) els.patientSearchResults.innerHTML = '';
+        if (els.topPatientSearch) els.topPatientSearch.value = '';
+    }
     renderPatientSelector();
 }
 
 function togglePatientDropdown() {
+    if (!hasSelectedPatient()) return;
     if (!els.patientDropdownMenu) return;
     const isOpen = !els.patientDropdownMenu.classList.toggle('hidden');
     els.patientSelectBtn?.setAttribute('aria-expanded', String(isOpen));
     if (isOpen) renderPatientSelector();
+}
+
+function openChoosePatientMenu() {
+    if (!els.choosePatientMenu) return;
+    renderChoosePatientMenu();
+    els.choosePatientMenu.classList.remove('hidden');
+    els.choosePatientBtn?.setAttribute('aria-expanded', 'true');
+}
+
+function closeChoosePatientMenu() {
+    els.choosePatientMenu?.classList.add('hidden');
+    els.choosePatientBtn?.setAttribute('aria-expanded', 'false');
+}
+
+function toggleChoosePatientMenu() {
+    if (!els.choosePatientMenu) return;
+    const isOpen = els.choosePatientMenu.classList.contains('hidden');
+    if (isOpen) openChoosePatientMenu();
+    else closeChoosePatientMenu();
 }
 
 function closePatientDropdown() {
@@ -591,6 +678,7 @@ function closePatientDropdown() {
 }
 
 function handleTopPatientSearch() {
+    if (!hasSelectedPatient()) return;
     if (!els.topPatientSearch || !els.patientSearchResults) return;
     const query = els.topPatientSearch.value.trim().toLowerCase();
     if (!query) {
@@ -616,6 +704,7 @@ function handleTopPatientSearch() {
 function handleGlobalPatientControlClick(e) {
     if (!e.target.closest('.patient-select-wrap')) closePatientDropdown();
     if (!e.target.closest('.patient-search-wrap')) els.patientSearchResults?.classList.add('hidden');
+    if (!e.target.closest('.choose-patient-card')) closeChoosePatientMenu();
 }
 
 function openAddPatientModal() {
@@ -680,9 +769,11 @@ function handlePatientClick(e) {
 function selectPatientRecord(patientId) {
     const record = PATIENT_RECORDS[patientId];
     if (!record) return;
+    state.selectedPatient = patientId;
     state.currentPatient = patientId;
     state.activePatientId = patientId;
     updateTopPatientControl(record);
+    renderChoosePatientMenu();
     const loadToken = ++state.patientLoadToken;
     closeContextReviewModal();
     closeBiomarkerDrawer();
@@ -813,9 +904,10 @@ function handlePatientSearch(e) {
 // PROMPT HANDLING
 // ============================================
 function handlePromptSubmit() {
-    const text = els.promptInput.value.trim();
+    if (!requirePatientSelection()) return;
+    const text = els.promptInput?.value.trim() || '';
     if (!text) {
-        simulateReportUpload('blood_report_sharma.pdf');
+        simulateReportUpload('clinical_report.pdf');
         return;
     }
 
@@ -827,6 +919,7 @@ function handlePromptSubmit() {
 }
 
 function handleChatSubmit() {
+    if (!requirePatientSelection()) return;
     const text = els.chatInput.value.trim();
     if (!text) return;
 
@@ -842,12 +935,17 @@ function handleChatSubmit() {
 function handleFileUpload(e) {
     const file = e.target.files[0];
     if (file) {
+        if (!requirePatientSelection()) {
+            e.target.value = '';
+            return;
+        }
         simulateReportUpload(file.name);
     }
     e.target.value = '';
 }
 
 function simulateReportUpload(filename) {
+    if (!requirePatientSelection()) return;
     const activeRecord = getActivePatientRecord();
     if (activeRecord && !activeRecord.reports.includes(filename)) {
         activeRecord.reports.push(filename);
