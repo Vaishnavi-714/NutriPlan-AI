@@ -132,9 +132,9 @@ const PATIENT_RECORDS = {
         ]
     },
     '2': {
-        patientId: 'NC-10816', name: 'Priya Mehta', initials: 'PM', age: 44, gender: 'Female', bmi: '26.1',
+        patientId: 'NC-10816', name: 'Riya Sharma', initials: 'RS', age: 44, gender: 'Female', bmi: '26.1',
         risk: 'Moderate Risk', riskClass: 'warning', lastActive: '1 hr ago', lastUpdated: 'Today, 11:30 AM',
-        reports: ['Priya_Mehta_Lipid_Report.pdf'], workflowState: 'reportProcessed', planStatus: 'Recommendation Pending',
+        reports: ['Riya_Sharma_Lipid_Report.pdf'], workflowState: 'reportProcessed', planStatus: 'Recommendation Pending',
         contextTags: ['Vegetarian', 'Dyslipidemia', 'Heart Healthy', 'High Fiber'],
         restrictions: ['Low Saturated Fat', 'High Fiber', 'No Fried Foods'],
         riskFlags: ['Elevated LDL Cholesterol', 'Borderline Triglycerides'],
@@ -146,14 +146,14 @@ const PATIENT_RECORDS = {
         ],
         markerValues: { 'HbA1c': ['5.7', 'borderline', 58], 'Fasting Blood Sugar': ['103', 'borderline', 56], 'Total Cholesterol': ['228', 'high', 72], 'Blood Pressure': ['126/82', 'borderline', 56], 'Vitamin D': ['28', 'low', 28], 'Creatinine': ['0.8', 'normal', 42] },
         messages: [
-            { sender: 'ai', text: 'Priya Mehta lipid findings have been processed. Review cardiovascular markers and nutrition context.' },
+            { sender: 'ai', text: 'Riya Sharma lipid findings have been processed. Review cardiovascular markers and nutrition context.' },
             { sender: 'doctor', text: 'Review LDL-lowering meal options and dietary fiber targets.' }
         ]
     },
     '3': {
-        patientId: 'NC-11007', name: 'Amit Kumar', initials: 'AK', age: 36, gender: 'Male', bmi: '23.7',
+        patientId: 'NC-11007', name: 'Amit Patil', initials: 'AP', age: 36, gender: 'Male', bmi: '23.7',
         risk: 'Low Risk', riskClass: 'normal', lastActive: '3 hrs ago', lastUpdated: 'Today, 09:42 AM',
-        reports: ['Amit_Kumar_CBC_Report.pdf'], workflowState: 'reportUploaded', planStatus: 'Analysis Pending',
+        reports: ['Amit_Patil_CBC_Report.pdf'], workflowState: 'reportUploaded', planStatus: 'Analysis Pending',
         contextTags: ['Non Vegetarian', 'Iron Review', 'Balanced Diet'],
         restrictions: ['Iron Rich Meals', 'Balanced Protein'],
         riskFlags: ['Borderline Iron Level'],
@@ -164,7 +164,7 @@ const PATIENT_RECORDS = {
             ['Creatinine', '0.9 mg/dL', 'normal', 'Normal'], ['Fasting Sugar', '91 mg/dL', 'normal', 'Normal']
         ],
         markerValues: { 'HbA1c': ['5.2', 'normal', 43], 'Fasting Blood Sugar': ['91', 'normal', 45], 'Total Cholesterol': ['178', 'normal', 47], 'Blood Pressure': ['118/76', 'normal', 48], 'Vitamin D': ['31', 'normal', 37], 'Creatinine': ['0.9', 'normal', 48] },
-        messages: [{ sender: 'ai', text: 'Amit Kumar has one uploaded CBC report ready for clinical analysis.' }]
+        messages: [{ sender: 'ai', text: 'Amit Patil has one uploaded CBC report ready for clinical analysis.' }]
     },
     '4': {
         patientId: 'NC-10339', name: 'Sunita Gupta', initials: 'SG', age: 59, gender: 'Female', bmi: '30.2',
@@ -198,9 +198,9 @@ const PATIENT_RECORDS = {
         messages: []
     },
     '6': {
-        patientId: 'NC-10195', name: 'Neha Kapoor', initials: 'NK', age: 31, gender: 'Female', bmi: '27.3',
+        patientId: 'NC-10195', name: 'Neha Joshi', initials: 'NJ', age: 31, gender: 'Female', bmi: '27.3',
         risk: 'Moderate Risk', riskClass: 'warning', lastActive: '23 May 2026', lastUpdated: '23 May 2026, 03:20 PM',
-        reports: ['Neha_Kapoor_PCOS_Profile.pdf'], workflowState: 'dietPlanReady', planStatus: 'Clinical Diet Plan Ready',
+        reports: ['Neha_Joshi_PCOS_Profile.pdf'], workflowState: 'dietPlanReady', planStatus: 'Clinical Diet Plan Ready',
         contextTags: ['Vegetarian', 'PCOS', 'Low GI', 'Weight Management'],
         restrictions: ['Low GI', 'High Protein', 'No Sweetened Drinks'],
         riskFlags: ['Insulin Resistance', 'Elevated BMI'],
@@ -212,7 +212,7 @@ const PATIENT_RECORDS = {
         ],
         markerValues: { 'HbA1c': ['5.9', 'borderline', 61], 'Fasting Blood Sugar': ['108', 'borderline', 59], 'Total Cholesterol': ['196', 'borderline', 58], 'Blood Pressure': ['122/80', 'borderline', 53], 'Vitamin D': ['24', 'low', 24], 'Creatinine': ['0.7', 'normal', 40] },
         messages: [
-            { sender: 'ai', text: 'Clinical diet plan is ready for Neha Kapoor with PCOS-sensitive glycemic targets.' },
+            { sender: 'ai', text: 'Clinical diet plan is ready for Neha Joshi with PCOS-sensitive glycemic targets.' },
             { sender: 'doctor', text: 'Maintain high protein breakfast alternatives in the weekly schedule.' }
         ]
     },
@@ -244,6 +244,11 @@ const els = {
     sidebar: $('#sidebar'),
     sidebarToggle: $('#sidebarToggle'),
     mobileSidebarBtn: $('#mobileSidebarBtn'),
+    profileMenuBtn: $('#profileMenuBtn'),
+    workspaceNavPopups: $('#workspaceNavPopups'),
+    profilePopup: $('#profilePopup'),
+    historyPopup: $('#historyPopup'),
+    historyPopupBtn: $('#historyPopupBtn'),
     mainContent: $('#mainContent'),
     welcomeState: $('#welcomeState'),
     uploadReviewState: $('#uploadReviewState'),
@@ -254,6 +259,7 @@ const els = {
     chatInput: $('#chatInput'),
     generateBtn: $('#generateBtn'),
     chatSendBtn: $('#chatSendBtn'),
+    composerGeneratePlanBtn: $('#composerGeneratePlanBtn'),
     uploadBtn: $('#uploadBtn'),
     chatUploadBtn: $('#chatUploadBtn'),
     voiceBtn: $('#voiceBtn'),
@@ -293,6 +299,7 @@ function init() {
     setGreeting();
     restoreSidebarState();
     renderBlankWorkspace();
+    renderPatientHistory();
     renderPatientSelector();
     renderChoosePatientMenu();
     bindEvents();
@@ -331,6 +338,9 @@ function bindEvents() {
 
     // Overlay closes sidebar + context panel
     els.mobileOverlay?.addEventListener('click', closePanels);
+    els.profileMenuBtn?.addEventListener('click', toggleProfilePopup);
+    els.historyPopupBtn?.addEventListener('click', openHistoryPopup);
+    document.getElementById('settingsMenuItem')?.addEventListener('click', closeNavigationPopups);
 
     // History section collapse
     if (els.historyToggle && els.sidebarHistory) {
@@ -348,7 +358,10 @@ function bindEvents() {
     }
 
     // New Patient
-    els.newPatientBtn?.addEventListener('click', openAddPatientModal);
+    els.newPatientBtn?.addEventListener('click', () => {
+        closeNavigationPopups();
+        openAddPatientModal();
+    });
 
     // Patient list (event delegation)
     els.patientList?.addEventListener('click', handlePatientClick);
@@ -366,15 +379,18 @@ function bindEvents() {
     });
     els.addPatientForm?.addEventListener('submit', createPatientFromForm);
     document.addEventListener('click', handleGlobalPatientControlClick);
+    document.addEventListener('click', handleNavigationPopupOutsideClick);
+    document.addEventListener('keydown', handleNavigationPopupKeydown);
 
     // Prompt actions
     els.generateBtn?.addEventListener('click', handlePromptSubmit);
     els.chatSendBtn?.addEventListener('click', handleChatSubmit);
     els.uploadBtn?.addEventListener('click', () => els.fileInput.click());
-    els.chatUploadBtn?.addEventListener('click', () => {
-        if (requirePatientSelection()) els.fileInput.click();
-    });
+    els.chatUploadBtn?.addEventListener('click', () => els.fileInput.click());
     els.voiceBtn?.addEventListener('click', handleVoice);
+    els.composerGeneratePlanBtn?.addEventListener('click', () => {
+        if (requirePatientSelection(false)) generateDietPlan();
+    });
     els.fileInput?.addEventListener('change', handleFileUpload);
 
     document.getElementById('logoutTopBtn')?.addEventListener('click', handleLogout);
@@ -409,7 +425,6 @@ function bindEvents() {
         e.preventDefault();
         dropZone?.classList.remove('dragover');
         if (e.dataTransfer.files.length > 0) {
-            if (!requirePatientSelection()) return;
             simulateReportUpload(e.dataTransfer.files[0].name);
         }
     });
@@ -420,12 +435,7 @@ function bindEvents() {
         });
     }
 
-    $$('.quick-action-card').forEach((card, i) => {
-        card.addEventListener('click', () => {
-            if (i === 0) els.fileInput.click();
-            else simulateReportUpload('clinical_report.pdf');
-        });
-    });
+    // Quick action cards are rendered dynamically, so they are handled by document-level delegation below.
 }
 
 // ============================================
@@ -467,6 +477,52 @@ function closePanels() {
     els.sidebar?.classList.remove('visible');
     els.contextPanel?.classList.remove('visible');
     els.mobileOverlay?.classList.add('hidden');
+    closeNavigationPopups();
+}
+
+function isNavigationPopupOpen() {
+    return els.workspaceNavPopups?.classList.contains('profile-open') || els.workspaceNavPopups?.classList.contains('history-open');
+}
+
+function openProfilePopup() {
+    if (!els.workspaceNavPopups) return;
+    els.workspaceNavPopups.classList.add('profile-open');
+    els.workspaceNavPopups.setAttribute('aria-hidden', 'false');
+    els.profileMenuBtn?.setAttribute('aria-expanded', 'true');
+}
+
+function toggleProfilePopup(e) {
+    e?.stopPropagation();
+    if (els.workspaceNavPopups?.classList.contains('profile-open')) closeNavigationPopups();
+    else openProfilePopup();
+}
+
+function openHistoryPopup(e) {
+    e?.stopPropagation();
+    openProfilePopup();
+    renderPatientHistory();
+    els.workspaceNavPopups?.classList.add('history-open');
+    els.historyPopupBtn?.setAttribute('aria-expanded', 'true');
+    if (els.patientSearch) els.patientSearch.value = '';
+}
+
+function closeNavigationPopups() {
+    if (!els.workspaceNavPopups) return;
+    els.workspaceNavPopups.classList.remove('profile-open', 'history-open');
+    els.workspaceNavPopups.setAttribute('aria-hidden', 'true');
+    els.profileMenuBtn?.setAttribute('aria-expanded', 'false');
+    els.historyPopupBtn?.setAttribute('aria-expanded', 'false');
+    if (els.patientSearch) els.patientSearch.value = '';
+}
+
+function handleNavigationPopupOutsideClick(e) {
+    if (!isNavigationPopupOpen()) return;
+    if (e.target.closest('#workspaceNavPopups') || e.target.closest('#profileMenuBtn')) return;
+    closeNavigationPopups();
+}
+
+function handleNavigationPopupKeydown(e) {
+    if (e.key === 'Escape') closeNavigationPopups();
 }
 
 // ============================================
@@ -490,7 +546,7 @@ function hasSelectedPatient() {
 function requirePatientSelection(openChooser = true) {
     if (hasSelectedPatient()) return true;
     renderBlankWorkspace();
-    if (openChooser) openChoosePatientMenu();
+    if (openChooser) openMobileSidebar();
     return false;
 }
 
@@ -501,14 +557,37 @@ function renderBlankWorkspace() {
     state.patientLoadToken++;
     resetClinicalState();
 
-    els.welcomeState?.classList.remove('hidden');
+    els.welcomeState?.classList.add('hidden');
     els.uploadReviewState?.classList.add('hidden');
-    els.chatState?.classList.add('hidden');
+    els.chatState?.classList.remove('hidden');
     if (els.uploadReviewContent) els.uploadReviewContent.innerHTML = '';
-    if (els.chatMessages) els.chatMessages.innerHTML = '';
+    if (els.chatMessages) els.chatMessages.innerHTML = createDefaultChatWelcomeHTML();
     closePatientDropdown();
     closeChoosePatientMenu();
     updateTopPatientControl(null);
+    renderPatientHistory();
+}
+
+function createDefaultChatWelcomeHTML() {
+    const hour = new Date().getHours();
+    let greeting = 'Good evening, Dr. Priya';
+    if (hour < 12) greeting = 'Good morning, Dr. Priya';
+    else if (hour < 17) greeting = 'Good afternoon, Dr. Priya';
+
+    return `
+        <section class="ai-welcome-panel minimal" aria-label="NutriCopilot greeting">
+            <h1>${greeting}</h1>
+        </section>
+    `;
+}
+
+function focusComposerWithText(text) {
+    if (!els.chatInput) return;
+    els.chatInput.focus();
+    if (!els.chatInput.value.trim()) {
+        els.chatInput.value = text;
+        els.chatInput.dispatchEvent(new Event('input'));
+    }
 }
 
 function getPatientContextDetails(record = getActivePatientRecord()) {
@@ -574,6 +653,61 @@ function getPatientEntries() {
     return Object.entries(PATIENT_RECORDS);
 }
 
+function getPatientArrivalDate(record) {
+    const timestamp = record.lastUpdated || record.lastActive || '';
+    const now = new Date();
+    if (/just now/i.test(timestamp)) return now;
+    const monthIndex = {
+        Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+        Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
+    };
+    const match = timestamp.match(/^(Today|(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})),?\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match) return new Date(0);
+
+    const isToday = /^today$/i.test(match[1]);
+    const day = isToday ? now.getDate() : Number(match[2]);
+    const month = isToday ? now.getMonth() : monthIndex[match[3].slice(0, 3)];
+    const year = isToday ? now.getFullYear() : Number(match[4]);
+    let hour = Number(match[5]);
+    const minute = Number(match[6]);
+    const period = match[7].toUpperCase();
+    if (period === 'PM' && hour !== 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+    return new Date(year, month, day, hour, minute);
+}
+
+function formatPatientArrival(record) {
+    const date = getPatientArrivalDate(record);
+    if (date.getTime() === 0) return record.lastUpdated || record.lastActive || '';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = date.toLocaleString('en-US', { month: 'short' });
+    const year = date.getFullYear();
+    let hour = date.getHours();
+    const period = hour >= 12 ? 'PM' : 'AM';
+    hour %= 12;
+    if (hour === 0) hour = 12;
+    const minute = String(date.getMinutes()).padStart(2, '0');
+    return `${day} ${month} ${year}, ${String(hour).padStart(2, '0')}:${minute} ${period}`;
+}
+
+function getPatientsByNewestArrival() {
+    return getPatientEntries().sort(([, a], [, b]) => getPatientArrivalDate(b) - getPatientArrivalDate(a));
+}
+
+function renderPatientHistory() {
+    if (!els.patientList) return;
+    const activeId = state.activePatientId;
+    els.patientList.innerHTML = getPatientsByNewestArrival().map(([id, record]) => `
+        <button class="patient-item${id === activeId ? ' active' : ''}" data-id="${id}" type="button" data-tooltip="${record.name}">
+            <span class="patient-avatar">${record.initials}</span>
+            <span class="patient-info">
+                <span class="patient-name">${record.name}</span>
+                <span class="patient-time">${formatPatientArrival(record)}</span>
+            </span>
+        </button>
+    `).join('');
+}
+
 function renderPatientSelector() {
     if (!els.patientDropdownMenu) return;
     const activeId = state.activePatientId;
@@ -581,7 +715,7 @@ function renderPatientSelector() {
         <div class="patient-dropdown-list">
             ${getPatientEntries().map(([id, record]) => createPatientOptionHTML(id, record, id === activeId)).join('')}
         </div>
-        <button class="patient-add-option" data-action="add-patient" type="button">+ Add New Patient</button>
+        <button class="patient-add-option" data-action="add-patient" type="button">Add New Patient</button>
     `;
     els.patientDropdownMenu.querySelectorAll('.patient-option').forEach(option => {
         option.addEventListener('click', () => {
@@ -745,6 +879,7 @@ function createPatientFromForm(e) {
         messages: []
     };
     closeAddPatientModal();
+    renderPatientHistory();
     selectPatientRecord(id);
 }
 
@@ -762,6 +897,7 @@ function handlePatientClick(e) {
     item.classList.add('active');
 
     selectPatientRecord(item.dataset.id);
+    closeNavigationPopups();
 
     if (window.innerWidth <= 900) closePanels();
 }
@@ -774,6 +910,7 @@ function selectPatientRecord(patientId) {
     state.activePatientId = patientId;
     updateTopPatientControl(record);
     renderChoosePatientMenu();
+    renderPatientHistory();
     const loadToken = ++state.patientLoadToken;
     closeContextReviewModal();
     closeBiomarkerDrawer();
@@ -895,7 +1032,7 @@ function renderPatientWorkspace(record) {
 function handlePatientSearch(e) {
     const query = e.target.value.toLowerCase();
     $$('.patient-item').forEach(item => {
-        const name = item.querySelector('.patient-name').textContent.toLowerCase();
+        const name = item.querySelector('.patient-name')?.textContent.toLowerCase() || '';
         item.style.display = name.includes(query) ? 'flex' : 'none';
     });
 }
@@ -935,17 +1072,12 @@ function handleChatSubmit() {
 function handleFileUpload(e) {
     const file = e.target.files[0];
     if (file) {
-        if (!requirePatientSelection()) {
-            e.target.value = '';
-            return;
-        }
         simulateReportUpload(file.name);
     }
     e.target.value = '';
 }
 
 function simulateReportUpload(filename) {
-    if (!requirePatientSelection()) return;
     const activeRecord = getActivePatientRecord();
     if (activeRecord && !activeRecord.reports.includes(filename)) {
         activeRecord.reports.push(filename);
@@ -958,9 +1090,74 @@ function simulateReportUpload(filename) {
     els.welcomeState.classList.add('hidden');
     els.uploadReviewState.classList.add('hidden');
     transitionToChat();
-    showReportAttachments([filename]);
-    addAIMessage(createSingleUploadCard(filename));
-    bindReviewCardButtons();
+    addUploadedFileMessage(filename);
+    const analyzingMessage = addAIMessage(createAnalyzingReportMessage(filename));
+    renderPatientHistory();
+    setTimeout(() => {
+        analyzingMessage.remove();
+        processReports();
+    }, 900);
+}
+
+function getFileTypeLabel(filename) {
+    const extension = filename.split('.').pop()?.toUpperCase() || 'FILE';
+    if (extension === 'PDF') return 'PDF report';
+    if (['JPG', 'JPEG', 'PNG'].includes(extension)) return `${extension} image`;
+    return `${extension} file`;
+}
+
+function escapeHTML(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+function addUploadedFileMessage(filename) {
+    const safeFilename = escapeHTML(filename);
+    const safeFileType = escapeHTML(getFileTypeLabel(filename));
+    const msg = document.createElement('div');
+    msg.className = 'message chat-row user-message upload-file-message';
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    msg.innerHTML = `
+        <div class="message-avatar chat-avatar user">DS</div>
+        <div class="message-content chat-message-content">
+            <div class="message-label chat-meta">Doctor<span>${time}</span></div>
+            <div class="message-bubble chat-bubble upload-file-bubble">
+                <div class="chat-upload-preview">
+                    <div class="chat-upload-icon">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14,2 14,8 20,8"/>
+                        </svg>
+                    </div>
+                    <div class="chat-upload-details">
+                        <strong>${safeFilename}</strong>
+                        <span>${safeFileType} · Uploaded successfully</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    els.chatMessages.appendChild(msg);
+    const activeRecord = getActivePatientRecord();
+    if (activeRecord && !state.isRenderingRecord) {
+        activeRecord.messages.push({ sender: 'doctor', text: `Uploaded report: ${filename}` });
+    }
+    scrollChatToBottom();
+}
+
+function createAnalyzingReportMessage(filename) {
+    const safeFilename = escapeHTML(filename);
+    return `
+        <div class="analysis-loading-note">
+            <span class="analysis-loading-pulse"></span>
+            <p>NutriCopilot is analyzing the uploaded report...</p>
+            <small>${safeFilename}</small>
+        </div>
+    `;
 }
 
 // ============================================
@@ -1081,6 +1278,7 @@ function processReports() {
                     if (processedRecord) {
                         processedRecord.workflowState = 'reportProcessed';
                         processedRecord.planStatus = 'Recommendation Pending';
+                        renderPatientHistory();
                     }
                     if (processingPatientId && processingPatientId !== state.activePatientId) return;
                     removeLastMessage();
@@ -1624,6 +1822,7 @@ function getPlanPageHref(patientId = state.activePatientId) {
 }
 
 function generateDietPlan() {
+    if (!requirePatientSelection(false)) return;
     const generationPatientId = state.activePatientId;
     collectPreferences();
     state.planGenerated = false;
@@ -1647,6 +1846,7 @@ function generateDietPlan() {
         if (activeRecord) {
             activeRecord.workflowState = 'dietPlanReady';
             activeRecord.planStatus = 'Clinical Diet Plan Ready';
+            renderPatientHistory();
         }
         if (generationPatientId && generationPatientId !== state.activePatientId) return;
         state.planGenerated = true;
@@ -2214,14 +2414,14 @@ function bindPlanActions() {
 // ============================================
 function handleVoice() {
     const btn = els.voiceBtn;
+    if (!btn) return;
     btn.classList.toggle('recording');
 
     if (btn.classList.contains('recording')) {
         // Simulate recording
         setTimeout(() => {
             btn.classList.remove('recording');
-            els.promptInput.value = "Patient is a 52 year old male with uncontrolled diabetes and high cholesterol. Needs a strict vegetarian diet plan.";
-            els.promptInput.dispatchEvent(new Event('input'));
+            focusComposerWithText("Patient is a 52 year old male with uncontrolled diabetes and high cholesterol. Needs a strict vegetarian diet plan.");
         }, 3000);
     }
 }
@@ -2230,6 +2430,24 @@ function handleVoice() {
 // EVENT DELEGATION FOR DYNAMIC ELEMENTS
 // ============================================
 document.addEventListener('click', (e) => {
+    const quickAction = e.target.closest('.quick-action-card');
+    if (quickAction) {
+        const action = quickAction.dataset.action;
+        if (action === 'upload') {
+            if (requirePatientSelection(false)) els.fileInput.click();
+        } else if (action === 'vitals') {
+            focusComposerWithText('Patient vitals: age, gender, height, weight, BMI, diagnosis, current medications...');
+        } else if (action === 'voice') {
+            handleVoice();
+        } else if (action === 'generate') {
+            if (requirePatientSelection(false)) generateDietPlan();
+        } else if (action === 'previous') {
+            const firstReady = getPatientEntries().find(([, record]) => record.workflowState === 'dietPlanReady');
+            if (firstReady) selectPatientRecord(firstReady[0]);
+        }
+        return;
+    }
+
     if (e.target.closest('[data-action="modify-context"]')) {
         openContextReviewModal();
         return;

@@ -110,29 +110,23 @@
 
             <header class="workspace-topbar">
                 <div class="patient-controls">
-                    <div class="patient-select-wrap" id="patientSelectWrap">
-                        <button class="patient-select-btn" id="patientSelectBtn" aria-haspopup="listbox" aria-expanded="false" disabled>
-                            <span class="top-patient-avatar" id="topPatientAvatar">--</span>
-                            <span class="top-patient-label" id="topPatientLabel">No patient selected</span>
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </button>
-                        <div class="patient-dropdown-menu hidden" id="patientDropdownMenu" role="listbox"></div>
-                    </div>
-
-                    <div class="patient-search-wrap">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <path d="M21 21l-4.35-4.35"/>
+                    <a class="workspace-nav-btn" id="backHomeBtn" href="landing.html" aria-label="Back to Home">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
+                            <path d="M3 11.5 12 4l9 7.5"/>
+                            <path d="M5 10.5V20h14v-9.5"/>
                         </svg>
-                        <input class="patient-search" id="topPatientSearch" type="search" placeholder="Search patients..." disabled>
-                        <div class="patient-search-results hidden" id="patientSearchResults"></div>
-                    </div>
+                        <span>Home</span>
+                    </a>
+                    <button class="new-patient-btn top-new-patient-btn" id="newPatientBtn" type="button">
+                        <svg class="btn-icon-el" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+                            <path d="M12 5v14M5 12h14"/>
+                        </svg>
+                        <span>New Patient</span>
+                    </button>
                 </div>
 
-                <div class="workspace-brand">
-                    <div class="workspace-brand-icon">
+                <div class="workspace-brand" aria-label="NutriCopilot">
+                    <div class="workspace-brand-icon" aria-hidden="true">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                             <circle cx="12" cy="12" r="10"/>
                             <path d="M12 6v6l4 2" stroke-linecap="round"/>
@@ -141,67 +135,17 @@
                     <span>NutriCopilot</span>
                 </div>
 
-                <div class="workspace-actions">
-                    <a class="workspace-nav-btn" id="backHomeBtn" href="landing.html" aria-label="Back to Home">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-                            <path d="M3 11.5 12 4l9 7.5"/>
-                            <path d="M5 10.5V20h14v-9.5"/>
-                        </svg>
-                        <span>Home</span>
-                    </a>
-                    <div class="doctor-top-profile">
-                        <span class="doctor-status-dot"></span>
-                        <span>Dr. Priya Sharma</span>
-                    </div>
-                    <button class="workspace-nav-btn logout" id="logoutTopBtn" type="button" aria-label="Logout">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true">
-                            <path d="M10 17l5-5-5-5"/>
-                            <path d="M15 12H3"/>
-                            <path d="M21 3v18"/>
-                        </svg>
-                        <span>Logout</span>
-                    </button>
-                </div>
+                <button class="top-profile-btn" id="profileMenuBtn" type="button" aria-label="Open doctor profile menu" aria-expanded="false">
+                    <span class="top-profile-avatar">PS</span>
+                    <span class="top-profile-copy">
+                        <strong>Dr. Priya Sharma</strong>
+                        <small>Clinical Dietitian</small>
+                    </span>
+                </button>
             </header>
 
             <!-- Welcome State -->
-            <div class="welcome-state" id="welcomeState">
-                <div class="workspace-empty-shell">
-                    <div class="choose-patient-card">
-                        <div class="choose-patient-icon" aria-hidden="true">
-                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                            </svg>
-                        </div>
-                        <button class="choose-patient-btn" id="choosePatientBtn" type="button" aria-haspopup="listbox" aria-expanded="false">
-                            Choose Patient
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
-                                <polyline points="6 9 12 15 18 9"/>
-                            </svg>
-                        </button>
-                        <p class="choose-patient-helper">Select a patient to begin report analysis and diet plan generation.</p>
-                        <div class="choose-patient-menu hidden" id="choosePatientMenu" role="listbox"></div>
-                    </div>
-                </div>
-
-                <div class="prompt-container hidden" id="promptContainer">
-                    <div class="prompt-box">
-                        <div class="prompt-upload-area" id="dropZone">
-                            <div class="drop-indicator" id="dropIndicator">
-                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                    <polyline points="17,8 12,3 7,8"/>
-                                    <line x1="12" y1="3" x2="12" y2="15"/>
-                                </svg>
-                                <span>Drop clinical report here</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="welcome-state hidden" id="welcomeState"></div>
 
             <!-- Upload Review State -->
             <div class="upload-review-state hidden" id="uploadReviewState">
@@ -222,7 +166,14 @@
                                     <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
                                 </svg>
                             </button>
-                            <textarea class="prompt-input" id="chatInput" placeholder="Ask NutriCopilot to refine the diet plan..." rows="1"></textarea>
+                            <button class="prompt-action-btn voice-btn" id="voiceBtn" title="Voice Input" type="button">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                                    <path d="M12 19v3"/>
+                                </svg>
+                            </button>
+                            <textarea class="prompt-input" id="chatInput" placeholder="Upload report, type patient vitals, or ask NutriCopilot to generate a diet plan…" rows="1"></textarea>
                             <button class="generate-btn" id="chatSendBtn" title="Send">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <line x1="22" y1="2" x2="11" y2="13"/>
@@ -235,6 +186,38 @@
             </div>
             <input type="file" id="fileInput" accept=".pdf,.jpg,.png,.jpeg" hidden>
         </main>
+
+        <div class="workspace-nav-popups" id="workspaceNavPopups" aria-hidden="true">
+            <section class="profile-popup" id="profilePopup" aria-label="Doctor profile navigation">
+                <div class="popup-profile-card">
+                    <div class="popup-profile-avatar">PS</div>
+                    <div>
+                        <strong>Dr. Priya Sharma</strong>
+                        <span>Clinical Dietitian</span>
+                    </div>
+                </div>
+                <button class="profile-popup-option" id="settingsMenuItem" type="button">
+                    <span>Profile Settings</span>
+                </button>
+                <button class="profile-popup-option" id="historyPopupBtn" type="button" aria-expanded="false">
+                    <span>History</span>
+                </button>
+                <button class="profile-popup-option logout" id="logoutTopBtn" type="button">
+                    <span>Logout</span>
+                </button>
+            </section>
+
+            <section class="history-popup" id="historyPopup" aria-label="Patient history">
+                <label class="popup-search-box" for="patientSearch">
+                    <svg class="search-icon-el" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="M21 21l-4.35-4.35"/>
+                    </svg>
+                    <input class="search-input-el" id="patientSearch" type="search" placeholder="Search patients...">
+                </label>
+                <div class="patient-list" id="patientList"></div>
+            </section>
+        </div>
 
     </div>
 
@@ -338,53 +321,6 @@
                 }, 1800);
             }
         });
-    </script>
-    <script>
-    (function () {
-        const profileArea = document.getElementById('sidebarProfile');
-        const menu = document.getElementById('profileMenu');
-        const profileBtn = document.getElementById('profileMenuBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (!profileArea || !menu) return;
-
-        function openMenu() {
-            const rect = profileArea.getBoundingClientRect();
-            menu.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
-            menu.style.left = rect.left + 'px';
-            menu.style.width = rect.width + 'px';
-            menu.classList.add('is-open');
-            if (profileBtn) profileBtn.setAttribute('aria-expanded', 'true');
-            profileArea.classList.add('menu-open');
-        }
-
-        function closeMenu() {
-            menu.classList.remove('is-open');
-            if (profileBtn) profileBtn.setAttribute('aria-expanded', 'false');
-            profileArea.classList.remove('menu-open');
-        }
-
-        profileArea.addEventListener('click', function (e) {
-            e.stopPropagation();
-            menu.classList.contains('is-open') ? closeMenu() : openMenu();
-        });
-
-        document.addEventListener('click', function (e) {
-            if (!profileArea.contains(e.target) && !menu.contains(e.target)) closeMenu();
-        });
-
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'Escape') closeMenu();
-        });
-
-        logoutBtn && logoutBtn.addEventListener('click', function () {
-            closeMenu();
-            if (typeof navigateTo === 'function') navigateTo('login.html');
-            else window.location.href = 'login.html';
-        });
-
-        const settingsItem = document.getElementById('settingsMenuItem');
-        settingsItem && settingsItem.addEventListener('click', closeMenu);
-    })();
     </script>
 </body>
 </html>
