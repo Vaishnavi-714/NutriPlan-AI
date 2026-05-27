@@ -81,9 +81,9 @@ if (signupForm) {
         signupBtn.style.opacity = '0.7';
         signupBtn.disabled = true;
 
-        // Simulate account creation then transition to dashboard
+        // Simulate account creation then transition to workspace
         setTimeout(() => {
-            navigateTo('index.html');
+            navigateTo('workspace.html');
         }, 1500);
     });
 
