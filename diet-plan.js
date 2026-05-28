@@ -23,6 +23,16 @@ const MEAL_COUNT_MAP = {
     7: ['Early Morning', 'Breakfast', 'Mid-Morning', 'Lunch', 'Evening Snack', 'Dinner', 'Bedtime']
 };
 
+const DAY_NUTRIENTS = {
+    Monday: { calories: '1,815', protein: '95g', carbs: '200g', fat: '55g', fiber: '39g' },
+    Tuesday: { calories: '1,760', protein: '88g', carbs: '190g', fat: '52g', fiber: '36g' },
+    Wednesday: { calories: '1,845', protein: '98g', carbs: '210g', fat: '58g', fiber: '41g' },
+    Thursday: { calories: '1,725', protein: '90g', carbs: '185g', fat: '50g', fiber: '35g' },
+    Friday: { calories: '1,880', protein: '100g', carbs: '215g', fat: '60g', fiber: '42g' },
+    Saturday: { calories: '1,795', protein: '92g', carbs: '198g', fat: '54g', fiber: '38g' },
+    Sunday: { calories: '1,825', protein: '94g', carbs: '205g', fat: '56g', fiber: '40g' }
+};
+
 const MEAL_IMAGES = {
     'Early Morning': 'https://images.unsplash.com/photo-1523362628745-0c100150b504?auto=format&fit=crop&w=900&q=80',
     Breakfast: 'https://images.unsplash.com/photo-1517673132405-a56a62b18caf?auto=format&fit=crop&w=900&q=80',
@@ -239,6 +249,7 @@ function getVisibleMeals() {
 
 function renderMeals(day) {
     document.getElementById('activeDayName').textContent = day;
+    updateNutrientCards(day);
     const grid = document.getElementById('mealCardGrid');
     grid.classList.add('is-switching');
     setTimeout(() => {
@@ -249,6 +260,15 @@ function renderMeals(day) {
         });
         grid.classList.remove('is-switching');
     }, 130);
+}
+
+function updateNutrientCards(day) {
+    const nutrients = DAY_NUTRIENTS[day] || DAY_NUTRIENTS.Monday;
+    const cards = document.querySelectorAll('.nutrition-card strong');
+    const values = [nutrients.calories, nutrients.protein, nutrients.carbs, nutrients.fat, nutrients.fiber];
+    cards.forEach((card, index) => {
+        card.textContent = values[index] || card.textContent;
+    });
 }
 
 function createMealCard(meal, index = 0) {

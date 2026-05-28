@@ -10897,3 +10897,52 @@ body {
         grid-template-columns: 1fr;
     }
 }
+
+/* Final workspace empty-state and new patient validation refinements. */
+.main-content.workspace-empty .chat-state {
+    justify-content: center;
+    gap: 18px;
+    padding-bottom: clamp(48px, 9vh, 110px);
+}
+
+.main-content.workspace-empty .chat-messages {
+    flex: 0 0 auto;
+    min-height: 0;
+    overflow: visible;
+    padding: 0 clamp(18px, 4vw, 58px);
+    background: transparent;
+}
+
+.main-content.workspace-empty .ai-welcome-panel.minimal {
+    margin: 0 auto;
+}
+
+.main-content.workspace-empty .chat-input-container {
+    padding: 0 clamp(18px, 4vw, 58px);
+    background: transparent;
+}
+
+.main-content.workspace-empty .chat-input-container .prompt-box {
+    width: min(760px, 100%);
+    max-width: 760px;
+}
+
+.add-patient-body label {
+    position: relative;
+}
+
+.add-patient-body label.field-invalid input,
+.add-patient-body label.field-invalid select,
+.add-patient-body label.field-invalid textarea {
+    border-color: rgba(239, 78, 58, 0.58);
+    background: #FFF7F5;
+    box-shadow: 0 0 0 4px rgba(239, 78, 58, 0.09);
+}
+
+.add-patient-body .field-error {
+    margin-top: 6px;
+    color: #C93424;
+    font-size: 11px;
+    font-weight: 750;
+    line-height: 1.35;
+}

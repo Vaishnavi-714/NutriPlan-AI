@@ -226,7 +226,7 @@
 
     <!-- Add Patient Modal -->
     <div class="add-patient-overlay hidden" id="addPatientOverlay" aria-modal="true" role="dialog" aria-labelledby="addPatientTitle">
-        <form class="add-patient-dialog" id="addPatientForm">
+        <form class="add-patient-dialog" id="addPatientForm" novalidate>
             <div class="add-patient-header">
                 <div>
                     <span class="context-review-eyebrow">New Patient</span>
@@ -241,10 +241,10 @@
             </div>
             <div class="add-patient-body">
                 <label><span>Patient name</span><input name="name" required placeholder="Full name"></label>
-                <label><span>Age</span><input name="age" inputmode="numeric" placeholder="Age"></label>
-                <label><span>Gender</span><select name="gender"><option>Female</option><option>Male</option><option>Other</option></select></label>
-                <label><span>Height (cm)</span><input name="height" id="patientHeightCm" inputmode="decimal" placeholder="e.g. 172"></label>
-                <label><span>Weight (kg)</span><input name="weight" id="patientWeightKg" inputmode="decimal" placeholder="e.g. 72"></label>
+                <label><span>Age</span><input name="age" required inputmode="numeric" placeholder="Age"></label>
+                <label><span>Gender</span><select name="gender"><option value="">Select gender</option><option>Female</option><option>Male</option><option>Other</option></select></label>
+                <label><span>Height (cm)</span><input name="height" id="patientHeightCm" required inputmode="decimal" placeholder="e.g. 172"></label>
+                <label><span>Weight (kg)</span><input name="weight" id="patientWeightKg" required inputmode="decimal" placeholder="e.g. 72"></label>
                 <label class="add-patient-bmi"><span>BMI</span><input name="bmi" id="patientBmiResult" readonly placeholder="Auto-calculated"></label>
                 <label><span>Phone/email</span><input name="contact" placeholder="Optional"></label>
                 <label><span>Medical condition</span><input name="condition" placeholder="e.g. Diabetes, hypertension"></label>

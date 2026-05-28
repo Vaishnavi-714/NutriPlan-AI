@@ -429,6 +429,18 @@ function bindEvents() {
     els.addPatientForm?.querySelectorAll('input[name="height"], input[name="weight"]').forEach(input => {
         input.addEventListener('input', updateAddPatientBmi);
     });
+    els.addPatientForm?.querySelectorAll('input, select, textarea').forEach(field => {
+        field.addEventListener('input', () => {
+            const label = field.closest('label');
+            label?.classList.remove('field-invalid');
+            label?.querySelector('.field-error')?.remove();
+        });
+        field.addEventListener('change', () => {
+            const label = field.closest('label');
+            label?.classList.remove('field-invalid');
+            label?.querySelector('.field-error')?.remove();
+        });
+    });
     document.addEventListener('click', handleGlobalPatientControlClick);
     document.addEventListener('click', handleNavigationPopupOutsideClick);
     document.addEventListener('keydown', handleNavigationPopupKeydown);
@@ -459,6 +471,9 @@ function bindEvents() {
             e.preventDefault();
             handleChatSubmit();
         }
+    });
+    els.chatInput?.addEventListener('input', () => {
+        if (els.chatInput.value.trim()) setWorkspaceEmpty(false);
     });
 
     // Drag & Drop
@@ -601,6 +616,10 @@ function requirePatientSelection(openChooser = true) {
     return false;
 }
 
+function setWorkspaceEmpty(isEmpty) {
+    els.mainContent?.classList.toggle('workspace-empty', Boolean(isEmpty));
+}
+
 function renderBlankWorkspace() {
     state.selectedPatient = null;
     state.currentPatient = null;
@@ -608,6 +627,7 @@ function renderBlankWorkspace() {
     state.patientLoadToken++;
     resetClinicalState();
     clearActivePatientNavigationState();
+    setWorkspaceEmpty(true);
 
     els.welcomeState?.classList.add('hidden');
     els.uploadReviewState?.classList.add('hidden');
@@ -793,12 +813,13 @@ function renderPatientSelector() {
 }
 
 function createPatientOptionHTML(id, record, active = false) {
+    const meta = [record.gender, record.age ? `${record.age} yrs` : '', record.risk].filter(Boolean).join(' · ');
     return `
         <button class="patient-option${active ? ' active' : ''}" data-id="${id}" type="button" role="option" aria-selected="${active}">
             <span class="patient-option-avatar">${record.initials}</span>
             <span class="patient-option-main">
                 <strong>${record.name}</strong>
-                <small>${record.gender} · ${record.age} yrs · ${record.risk}</small>
+                <small>${meta}</small>
             </span>
             <span class="patient-option-date">${record.lastActive}</span>
         </button>
@@ -907,6 +928,7 @@ function handleGlobalPatientControlClick(e) {
 function openAddPatientModal() {
     els.addPatientOverlay?.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    clearAddPatientValidation();
     updateAddPatientBmi();
     setTimeout(() => els.addPatientForm?.querySelector('input[name="name"]')?.focus(), 80);
 }
@@ -914,8 +936,46 @@ function openAddPatientModal() {
 function closeAddPatientModal() {
     els.addPatientOverlay?.classList.add('hidden');
     els.addPatientForm?.reset();
+    clearAddPatientValidation();
     updateAddPatientBmi();
     document.body.style.overflow = '';
+}
+
+function clearAddPatientValidation() {
+    if (!els.addPatientForm) return;
+    els.addPatientForm.querySelectorAll('.field-error').forEach(error => error.remove());
+    els.addPatientForm.querySelectorAll('.field-invalid').forEach(label => label.classList.remove('field-invalid'));
+}
+
+function showAddPatientFieldError(input, message) {
+    const label = input?.closest('label');
+    if (!label) return;
+    label.classList.add('field-invalid');
+    const error = document.createElement('small');
+    error.className = 'field-error';
+    error.textContent = message;
+    label.appendChild(error);
+}
+
+function validateAddPatientForm() {
+    if (!els.addPatientForm) return false;
+    clearAddPatientValidation();
+    const requiredFields = [
+        ['name', 'Patient name is required.'],
+        ['age', 'Age is required.'],
+        ['height', 'Height is required.'],
+        ['weight', 'Weight is required.']
+    ];
+    const invalid = [];
+    requiredFields.forEach(([name, message]) => {
+        const input = els.addPatientForm.querySelector(`[name="${name}"]`);
+        if (!String(input?.value || '').trim()) {
+            invalid.push(input);
+            showAddPatientFieldError(input, message);
+        }
+    });
+    invalid[0]?.focus();
+    return invalid.length === 0;
 }
 
 function getBmiCategory(bmi) {
@@ -943,13 +1003,14 @@ function updateAddPatientBmi() {
 
 function createPatientFromForm(e) {
     e.preventDefault();
+    if (!validateAddPatientForm()) return;
     const data = new FormData(els.addPatientForm);
     const name = String(data.get('name') || '').trim();
     if (!name) return;
     const id = String(Math.max(...Object.keys(PATIENT_RECORDS).map(Number)) + 1);
     const initials = name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
-    const age = Number(data.get('age')) || 40;
-    const gender = data.get('gender') || 'Female';
+    const age = Number(data.get('age'));
+    const gender = data.get('gender') || '';
     const height = String(data.get('height') || '').trim();
     const weight = String(data.get('weight') || '').trim();
     const bmiValue = String(data.get('bmi') || '').trim().split(' ')[0] || '—';
@@ -1023,6 +1084,7 @@ function selectPatientRecord(patientId) {
     state.selectedPatient = patientId;
     state.currentPatient = patientId;
     state.activePatientId = patientId;
+    setWorkspaceEmpty(false);
     persistActivePatientId(patientId);
     updateTopPatientControl(record);
     renderChoosePatientMenu();
@@ -1100,17 +1162,6 @@ function createPatientWorkspaceHeader(record) {
     `;
 }
 
-function createPatientEmptyState(record) {
-    return `
-        <div class="patient-workspace-empty">
-            <span class="workspace-state-label">Report Required</span>
-            <h3>No report available for ${record.name}</h3>
-            <p>Upload a clinical report or add review notes to begin this patient workspace.</p>
-            <button class="workspace-upload-btn" id="recordUploadBtn">Upload Clinical Report</button>
-        </div>
-    `;
-}
-
 function createReportAnalysisStatusCard(record) {
     const filename = record.reports?.[0] || 'Uploaded report';
     return `
@@ -1144,6 +1195,7 @@ function createPatientWorkflowNote(record) {
 }
 
 function renderPatientWorkspace(record) {
+    setWorkspaceEmpty(false);
     els.welcomeState.classList.add('hidden');
     els.uploadReviewState.classList.add('hidden');
     els.uploadReviewContent.innerHTML = '';
@@ -1169,9 +1221,6 @@ function renderPatientWorkspace(record) {
             }
             document.querySelector('.review-hub-cards')?.insertAdjacentHTML('afterend', createPatientWorkflowNote(record));
         }
-    } else {
-        els.chatMessages.insertAdjacentHTML('beforeend', createPatientEmptyState(record));
-        document.getElementById('recordUploadBtn')?.addEventListener('click', () => els.fileInput.click());
     }
     scrollChatToBottom();
 }
@@ -1337,6 +1386,7 @@ function ensureUploadPatientRecord(filename) {
 }
 
 function simulateReportUpload(filename) {
+    setWorkspaceEmpty(false);
     const activeRecord = ensureUploadPatientRecord(filename);
     if (activeRecord && !activeRecord.reports.includes(filename)) {
         activeRecord.reports.push(filename);
