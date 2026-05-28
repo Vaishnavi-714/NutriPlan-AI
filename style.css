@@ -10572,7 +10572,10 @@ body {
 
 .workspace-nav-popups {
     --profile-popup-width: min(286px, 44vw);
-    --history-popup-left: calc(14px + var(--profile-popup-width) + 10px);
+    --popup-right: 14px;
+    --popup-gap: 10px;
+    --history-popup-width: min(382px, calc(100vw - var(--profile-popup-width) - var(--popup-right) - var(--popup-gap) - 14px));
+    --history-popup-right: calc(var(--popup-right) + var(--profile-popup-width) + var(--popup-gap));
     position: fixed;
     inset: 0;
     z-index: 520;
@@ -10595,24 +10598,24 @@ body {
 }
 
 .profile-popup {
-    left: 14px;
+    right: var(--popup-right);
     width: var(--profile-popup-width);
     display: grid;
     gap: 8px;
     padding: 14px;
-    border-radius: 0 24px 24px 0;
-    transform: translateX(-22px);
+    border-radius: 24px 0 0 24px;
+    transform: translateX(22px);
 }
 
 .history-popup {
-    left: var(--history-popup-left);
-    width: min(382px, calc(100vw - var(--history-popup-left) - 14px));
+    right: var(--history-popup-right);
+    width: var(--history-popup-width);
     display: grid;
     grid-template-rows: auto minmax(0, 1fr);
     gap: 12px;
     padding: 14px 10px 10px;
     border-radius: 24px;
-    transform: translateX(-10px);
+    transform: translateX(10px);
 }
 
 .workspace-nav-popups.profile-open .profile-popup,
@@ -10750,6 +10753,7 @@ body {
 
     .workspace-nav-popups {
         --profile-popup-width: min(252px, 48vw);
+        --history-popup-width: min(330px, calc(100vw - var(--profile-popup-width) - var(--popup-right) - var(--popup-gap) - 8px));
     }
 }
 
@@ -10780,7 +10784,10 @@ body {
 
     .workspace-nav-popups {
         --profile-popup-width: min(214px, 46vw);
-        --history-popup-left: calc(8px + var(--profile-popup-width) + 6px);
+        --popup-right: 8px;
+        --popup-gap: 6px;
+        --history-popup-width: calc(100vw - var(--profile-popup-width) - var(--popup-right) - var(--popup-gap) - 8px);
+        --history-popup-right: calc(var(--popup-right) + var(--profile-popup-width) + var(--popup-gap));
     }
 
     .profile-popup,
@@ -10790,12 +10797,103 @@ body {
     }
 
     .profile-popup {
-        left: 8px;
         padding: 10px;
     }
 
-    .history-popup {
-        width: calc(100vw - var(--history-popup-left) - 8px);
+.history-popup {
         padding: 10px 8px 8px;
+    }
+}
+
+/* BMI fields and stable patient-preference modal sizing */
+.add-patient-bmi input {
+    background: #F7FBFC;
+    color: #1A4867;
+    font-weight: 800;
+}
+
+.context-review-dialog {
+    width: min(1040px, calc(100vw - 44px));
+    height: min(780px, calc(100dvh - 44px));
+    max-height: min(780px, calc(100dvh - 44px));
+}
+
+.context-review-header,
+.ctx-review-foot {
+    flex-shrink: 0;
+}
+
+.context-review-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    padding: 18px;
+}
+
+.patient-context-wizard {
+    min-height: 0;
+    width: 100%;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 14px;
+}
+
+.wizard-step-card {
+    min-height: 0;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+.wizard-step-content {
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.rh-plan-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.rh-plan-actions .rh-review-plan-btn,
+.rh-plan-actions .modify-context-btn {
+    width: 100%;
+    min-height: 40px;
+}
+
+.review-hub-card.rh-card-disabled {
+    opacity: 0.66;
+    cursor: default;
+    filter: saturate(0.78);
+}
+
+.review-hub-card.rh-card-disabled:hover {
+    transform: none;
+    box-shadow: 0 12px 32px rgba(26, 72, 103, 0.07);
+}
+
+.review-hub-card.rh-card-disabled .rh-review-btn,
+.review-hub-card.rh-card-disabled .rh-review-btn:hover,
+.rh-review-btn:disabled {
+    cursor: not-allowed;
+    color: #64748B;
+    background: #EAF4FA;
+    box-shadow: none;
+    transform: none;
+    pointer-events: none;
+}
+
+@media (max-width: 640px) {
+    .context-review-dialog {
+        width: calc(100vw - 24px);
+        height: calc(100dvh - 24px);
+        max-height: calc(100dvh - 24px);
+    }
+
+    .rh-plan-actions {
+        grid-template-columns: 1fr;
     }
 }

@@ -17,6 +17,7 @@ const state = {
     sidebarVisible: true,
     planGenerated: false,
     uploadedFiles: [],
+    uploadSessionPatientId: null,
     uploadState: 'idle', // 'idle' | 'review' | 'processing' | 'complete'
     contextWizardStep: 0,
     contextWizardData: null,
@@ -32,16 +33,10 @@ const state = {
 };
 
 const CONTEXT_WIZARD_STEPS = [
-    { id: 'allergies', eyebrow: 'Step 1 of 10', title: 'Does the patient have any allergies?', subtitle: 'Select all relevant allergies or add custom details.' },
-    { id: 'diet', eyebrow: 'Step 2 of 10', title: 'What type of diet does the patient follow?', subtitle: 'Choose the primary diet preference.' },
-    { id: 'regularFoods', eyebrow: 'Step 3 of 10', title: 'What does the patient usually eat?', subtitle: 'Select common food patterns to help the AI generate realistic plans.' },
-    { id: 'likedFoods', eyebrow: 'Step 4 of 10', title: 'What foods does the patient like most?', subtitle: 'Choose preferred foods and cuisines.' },
-    { id: 'avoidedFoods', eyebrow: 'Step 5 of 10', title: 'What foods should be avoided?', subtitle: 'Capture dislikes or foods the patient will not eat.' },
-    { id: 'routine', eyebrow: 'Step 6 of 10', title: 'What is the patient’s daily routine?', subtitle: 'Help the AI match the meal plan to lifestyle and activity.' },
-    { id: 'meals', eyebrow: 'Step 7 of 10', title: 'How many meals does the patient take per day?', subtitle: 'Choose the preferred eating pattern.' },
-    { id: 'hydration', eyebrow: 'Step 8 of 10', title: 'How much water does the patient drink daily?', subtitle: 'Hydration helps personalize the plan.' },
-    { id: 'goals', eyebrow: 'Step 9 of 10', title: 'What is the main clinical / nutritional focus?', subtitle: 'Choose all applicable goals.' },
-    { id: 'review', eyebrow: 'Step 10 of 10', title: 'Review patient context', subtitle: 'Confirm all details before generating the diet plan.' }
+    { id: 'allergies', title: 'Does the patient have any allergies?', subtitle: 'Select all relevant allergies or add custom details.' },
+    { id: 'diet', title: 'What type of diet does the patient follow?', subtitle: 'Choose the primary diet preference.' },
+    { id: 'routine', title: 'What is the patient’s daily routine?', subtitle: 'Help the AI match the plan to lifestyle and activity.' },
+    { id: 'review', title: 'Review patient context', subtitle: 'Confirm details before generating the diet plan.' }
 ];
 
 const WIZARD_OPTIONS = {
@@ -189,8 +184,8 @@ const PATIENT_RECORDS = {
         patientId: 'NC-11142', name: 'Vikram Rao', initials: 'VR', age: 40, gender: 'Male', bmi: '24.9',
         risk: 'Pending Review', riskClass: 'warning', lastActive: '25 May 2026', lastUpdated: '25 May 2026, 02:06 PM',
         reports: [], workflowState: 'noReport', planStatus: 'No Diet Plan Generated',
-        contextTags: ['Initial Intake'],
-        restrictions: ['Awaiting Report'],
+        contextTags: ['Pending review'],
+        restrictions: [],
         riskFlags: ['No uploaded report'],
         clinicalNotes: ['Start patient intake to prepare clinical recommendations.'],
         biomarkers: [],
@@ -233,6 +228,52 @@ const PATIENT_RECORDS = {
         messages: [{ sender: 'ai', text: 'Deepak Patel cardiac findings require a heart-healthy clinical nutrition review.' }]
     }
 };
+
+const STORAGE_KEYS = {
+    patientRecords: 'nutricopilot.patientRecords.v1',
+    activePatientId: 'nutricopilot.activePatientId'
+};
+
+function mergeStoredPatientRecords() {
+    try {
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.patientRecords) || '{}');
+        Object.entries(stored).forEach(([id, record]) => {
+            if (record && typeof record === 'object') {
+                PATIENT_RECORDS[id] = { ...(PATIENT_RECORDS[id] || {}), ...record };
+            }
+        });
+    } catch (error) {
+        console.warn('Unable to restore patient records', error);
+    }
+}
+
+function persistPatientRecords() {
+    try {
+        localStorage.setItem(STORAGE_KEYS.patientRecords, JSON.stringify(PATIENT_RECORDS));
+        if (state.activePatientId) {
+            localStorage.setItem(STORAGE_KEYS.activePatientId, state.activePatientId);
+            sessionStorage.setItem(STORAGE_KEYS.activePatientId, state.activePatientId);
+        }
+    } catch (error) {
+        console.warn('Unable to save patient records', error);
+    }
+}
+
+function persistActivePatientId(patientId = state.activePatientId) {
+    if (!patientId) return;
+    localStorage.setItem(STORAGE_KEYS.activePatientId, patientId);
+    sessionStorage.setItem(STORAGE_KEYS.activePatientId, patientId);
+}
+
+function getInitialPatientId() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('patientId');
+}
+
+function clearActivePatientNavigationState() {
+    localStorage.removeItem(STORAGE_KEYS.activePatientId);
+    sessionStorage.removeItem(STORAGE_KEYS.activePatientId);
+}
 
 // ============================================
 // DOM ELEMENTS
@@ -296,15 +337,21 @@ const els = {
 // INITIALIZATION
 // ============================================
 function init() {
+    mergeStoredPatientRecords();
     setGreeting();
     restoreSidebarState();
-    renderBlankWorkspace();
     renderPatientHistory();
     renderPatientSelector();
     renderChoosePatientMenu();
     bindEvents();
     autoResizeTextareas();
     initSidebarTooltips();
+    const initialPatientId = getInitialPatientId();
+    if (initialPatientId && PATIENT_RECORDS[initialPatientId]) {
+        selectPatientRecord(initialPatientId);
+    } else {
+        renderBlankWorkspace();
+    }
 }
 
 function setGreeting() {
@@ -359,6 +406,7 @@ function bindEvents() {
 
     // New Patient
     els.newPatientBtn?.addEventListener('click', () => {
+        saveCurrentPatientToHistory();
         closeNavigationPopups();
         openAddPatientModal();
     });
@@ -378,6 +426,9 @@ function bindEvents() {
         if (e.target === els.addPatientOverlay) closeAddPatientModal();
     });
     els.addPatientForm?.addEventListener('submit', createPatientFromForm);
+    els.addPatientForm?.querySelectorAll('input[name="height"], input[name="weight"]').forEach(input => {
+        input.addEventListener('input', updateAddPatientBmi);
+    });
     document.addEventListener('click', handleGlobalPatientControlClick);
     document.addEventListener('click', handleNavigationPopupOutsideClick);
     document.addEventListener('keydown', handleNavigationPopupKeydown);
@@ -389,7 +440,7 @@ function bindEvents() {
     els.chatUploadBtn?.addEventListener('click', () => els.fileInput.click());
     els.voiceBtn?.addEventListener('click', handleVoice);
     els.composerGeneratePlanBtn?.addEventListener('click', () => {
-        if (requirePatientSelection(false)) generateDietPlan();
+        if (requirePatientSelection(false)) openContextReviewModal();
     });
     els.fileInput?.addEventListener('change', handleFileUpload);
 
@@ -556,6 +607,7 @@ function renderBlankWorkspace() {
     state.activePatientId = null;
     state.patientLoadToken++;
     resetClinicalState();
+    clearActivePatientNavigationState();
 
     els.welcomeState?.classList.add('hidden');
     els.uploadReviewState?.classList.add('hidden');
@@ -570,9 +622,9 @@ function renderBlankWorkspace() {
 
 function createDefaultChatWelcomeHTML() {
     const hour = new Date().getHours();
-    let greeting = 'Good evening, Dr. Priya';
-    if (hour < 12) greeting = 'Good morning, Dr. Priya';
-    else if (hour < 17) greeting = 'Good afternoon, Dr. Priya';
+    let greeting = 'Good evening, Dr. Priya Sharma';
+    if (hour < 12) greeting = 'Good morning, Dr. Priya Sharma';
+    else if (hour < 17) greeting = 'Good afternoon, Dr. Priya Sharma';
 
     return `
         <section class="ai-welcome-panel minimal" aria-label="NutriCopilot greeting">
@@ -642,6 +694,7 @@ function resetClinicalState() {
     state.planGenerated = false;
     state.planApproved = false;
     state.uploadedFiles = [];
+    state.uploadSessionPatientId = null;
     state.uploadState = 'idle';
     state.selectedPreferences = {
         diet: [], allergies: [], conditions: [],
@@ -662,6 +715,16 @@ function getPatientArrivalDate(record) {
         Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11
     };
     const match = timestamp.match(/^(Today|(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})),?\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    const usMatch = timestamp.match(/^([A-Za-z]{3,})\s+(\d{1,2}),?\s+(\d{4}),?\s+(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match && usMatch) {
+        const month = monthIndex[usMatch[1].slice(0, 3)];
+        let hour = Number(usMatch[4]);
+        const minute = Number(usMatch[5]);
+        const period = usMatch[6].toUpperCase();
+        if (period === 'PM' && hour !== 12) hour += 12;
+        if (period === 'AM' && hour === 12) hour = 0;
+        return new Date(Number(usMatch[3]), month, Number(usMatch[2]), hour, minute);
+    }
     if (!match) return new Date(0);
 
     const isToday = /^today$/i.test(match[1]);
@@ -844,13 +907,38 @@ function handleGlobalPatientControlClick(e) {
 function openAddPatientModal() {
     els.addPatientOverlay?.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+    updateAddPatientBmi();
     setTimeout(() => els.addPatientForm?.querySelector('input[name="name"]')?.focus(), 80);
 }
 
 function closeAddPatientModal() {
     els.addPatientOverlay?.classList.add('hidden');
     els.addPatientForm?.reset();
+    updateAddPatientBmi();
     document.body.style.overflow = '';
+}
+
+function getBmiCategory(bmi) {
+    if (bmi < 18.5) return 'Underweight';
+    if (bmi < 25) return 'Normal';
+    if (bmi < 30) return 'Overweight';
+    return 'Obese';
+}
+
+function updateAddPatientBmi() {
+    if (!els.addPatientForm) return;
+    const height = Number(els.addPatientForm.querySelector('[name="height"]')?.value);
+    const weight = Number(els.addPatientForm.querySelector('[name="weight"]')?.value);
+    const bmiInput = els.addPatientForm.querySelector('[name="bmi"]');
+    if (!bmiInput) return;
+    if (height > 0 && weight > 0) {
+        const bmi = weight / ((height / 100) * (height / 100));
+        const rounded = bmi.toFixed(1);
+        const category = getBmiCategory(bmi);
+        bmiInput.value = `${rounded} ${category}`;
+    } else {
+        bmiInput.value = '';
+    }
 }
 
 function createPatientFromForm(e) {
@@ -862,22 +950,49 @@ function createPatientFromForm(e) {
     const initials = name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
     const age = Number(data.get('age')) || 40;
     const gender = data.get('gender') || 'Female';
-    const condition = String(data.get('condition') || 'Initial Intake').trim() || 'Initial Intake';
+    const height = String(data.get('height') || '').trim();
+    const weight = String(data.get('weight') || '').trim();
+    const bmiValue = String(data.get('bmi') || '').trim().split(' ')[0] || '—';
+    const condition = String(data.get('condition') || 'Pending review').trim() || 'Pending review';
     const diet = data.get('diet') || 'Vegetarian';
     const notes = String(data.get('notes') || 'New patient intake created by doctor.').trim();
     PATIENT_RECORDS[id] = {
         patientId: `NC-${Math.floor(10000 + Math.random() * 89999)}`,
-        name, initials, age, gender, bmi: '—',
+        name, initials, age, gender, bmi: bmiValue,
         risk: 'Pending Review', riskClass: 'warning', lastActive: 'Just now', lastUpdated: 'Just now',
         reports: [], workflowState: 'noReport', planStatus: 'No Diet Plan Generated',
         contextTags: [diet, condition],
-        restrictions: ['Awaiting Report'],
+        restrictions: [],
         riskFlags: ['No uploaded report'],
         clinicalNotes: [notes],
         biomarkers: [],
         markerValues: {},
-        messages: []
+        messages: [],
+        contextDetails: {
+            name,
+            age: String(age),
+            gender,
+            height,
+            weight,
+            bmi: bmiValue,
+            conditions: condition,
+            medications: '',
+            allergies: 'None reported',
+            foodPreference: diet,
+            cuisinePreference: 'Mixed',
+            eatsRegularly: '',
+            likes: '',
+            dislikes: '',
+            mealsPerDay: '5',
+            routine: '',
+            activityLevel: 'Moderate',
+            mealTimings: '',
+            waterIntake: '',
+            restrictions: [],
+            doctorNotes: notes
+        }
     };
+    persistPatientRecords();
     closeAddPatientModal();
     renderPatientHistory();
     selectPatientRecord(id);
@@ -908,6 +1023,7 @@ function selectPatientRecord(patientId) {
     state.selectedPatient = patientId;
     state.currentPatient = patientId;
     state.activePatientId = patientId;
+    persistActivePatientId(patientId);
     updateTopPatientControl(record);
     renderChoosePatientMenu();
     renderPatientHistory();
@@ -931,7 +1047,7 @@ function selectPatientRecord(patientId) {
 function applyPatientRecordState(record) {
     resetClinicalState();
     state.uploadedFiles = [...record.reports];
-    state.planGenerated = record.workflowState === 'dietPlanReady';
+    state.planGenerated = record.workflowState === 'dietPlanReady' || Boolean(record.planGenerated);
     state.planApproved = Boolean(record.planApproved);
     const workflowToUploadState = {
         noReport: 'idle',
@@ -957,6 +1073,12 @@ function createPatientRecordLoadingHTML(record) {
 
 function createPatientWorkspaceHeader(record) {
     const planClass = record.workflowState === 'dietPlanReady' ? 'ready' : 'pending';
+    const details = [
+        record.gender,
+        record.age ? `${record.age} yrs` : '',
+        record.bmi ? `BMI ${record.bmi}` : ''
+    ].filter(Boolean).join(' · ');
+    const meta = [details, `Patient ID ${record.patientId}`].filter(Boolean).join(' | ');
     return `
         <section class="patient-workspace-header" aria-label="${record.name} clinical workspace">
             <div class="pwh-main">
@@ -966,7 +1088,7 @@ function createPatientWorkspaceHeader(record) {
                         <h2>${record.name}</h2>
                         <span class="pwh-risk ${record.riskClass}">${record.risk}</span>
                     </div>
-                    <p>${record.gender} · ${record.age} yrs · BMI ${record.bmi} &nbsp;|&nbsp; Patient ID ${record.patientId}</p>
+                    <p>${meta}</p>
                 </div>
             </div>
             <div class="pwh-status">
@@ -981,10 +1103,35 @@ function createPatientWorkspaceHeader(record) {
 function createPatientEmptyState(record) {
     return `
         <div class="patient-workspace-empty">
-            <span class="workspace-state-label">Clinical Intake</span>
+            <span class="workspace-state-label">Report Required</span>
             <h3>No report available for ${record.name}</h3>
             <p>Upload a clinical report or add review notes to begin this patient workspace.</p>
             <button class="workspace-upload-btn" id="recordUploadBtn">Upload Clinical Report</button>
+        </div>
+    `;
+}
+
+function createReportAnalysisStatusCard(record) {
+    const filename = record.reports?.[0] || 'Uploaded report';
+    return `
+        <div class="upload-action-card analysis-resume-card">
+            <div class="upload-success-badge">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <polyline points="20,6 9,17 4,12"/>
+                </svg>
+            </div>
+            <div class="upload-action-title">
+                <em class="upload-action-filename">${escapeHTML(filename)}</em> uploaded
+            </div>
+            <p class="upload-action-subtitle">Previous report is saved for this patient. Resume clinical analysis to continue from the saved workspace.</p>
+            <div class="upload-action-buttons">
+                <button class="process-reports-btn" id="resumeAnalysisBtn" type="button">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
+                    </svg>
+                    Complete Patient Context
+                </button>
+            </div>
         </div>
     `;
 }
@@ -1008,13 +1155,10 @@ function renderPatientWorkspace(record) {
     record.messages.forEach(message => addMessage(message.sender === 'doctor' ? 'user' : 'ai', message.text, false, false));
     state.isRenderingRecord = false;
 
-    if (record.workflowState === 'noReport') {
-        els.chatMessages.insertAdjacentHTML('beforeend', createPatientEmptyState(record));
-        document.getElementById('recordUploadBtn')?.addEventListener('click', () => els.fileInput.click());
-    } else if (record.workflowState === 'reportUploaded') {
-        addAIMessage(createSingleUploadCard(record.reports[0]));
-        bindReviewCardButtons();
-    } else {
+    if (record.workflowState === 'reportUploaded') {
+        addAIMessage(createReportAnalysisStatusCard(record));
+        document.getElementById('resumeAnalysisBtn')?.addEventListener('click', processReports);
+    } else if (record.workflowState !== 'noReport') {
         addAIMessage(createReviewHub());
         bindReviewHubButtons();
         if (record.workflowState === 'contextReviewed') {
@@ -1025,6 +1169,9 @@ function renderPatientWorkspace(record) {
             }
             document.querySelector('.review-hub-cards')?.insertAdjacentHTML('afterend', createPatientWorkflowNote(record));
         }
+    } else {
+        els.chatMessages.insertAdjacentHTML('beforeend', createPatientEmptyState(record));
+        document.getElementById('recordUploadBtn')?.addEventListener('click', () => els.fileInput.click());
     }
     scrollChatToBottom();
 }
@@ -1077,21 +1224,147 @@ function handleFileUpload(e) {
     e.target.value = '';
 }
 
-function simulateReportUpload(filename) {
+function detectPatientFromReport(filename) {
+    const normalizedFile = String(filename || '').toLowerCase().replace(/[_-]+/g, ' ');
+    const matched = getPatientEntries().find(([, record]) => normalizedFile.includes(record.name.toLowerCase()));
+    if (matched) return { ...matched[1] };
+    if (/riya|lipid|cardio|cholesterol/i.test(filename)) return { ...PATIENT_RECORDS['2'] };
+    return {
+        patientId: `NC-${Math.floor(10000 + Math.random() * 89999)}`,
+        name: 'Patient from Uploaded Report',
+        initials: 'PR',
+        age: '',
+        gender: '',
+        bmi: ''
+    };
+}
+
+function findPatientByReport(filename) {
+    return getPatientEntries().find(([, record]) => (record.reports || []).includes(filename));
+}
+
+function saveCurrentPatientToHistory() {
+    const record = getActivePatientRecord();
+    if (!record || !(record.reports?.length || state.uploadedFiles.length)) return null;
+    state.uploadedFiles.forEach(file => {
+        if (!record.reports.includes(file)) record.reports.push(file);
+    });
+    record.lastActive = 'Just now';
+    record.lastUpdated = new Date().toLocaleString('en-US', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    if (state.uploadState === 'processing' || state.uploadState === 'complete') {
+        record.workflowState = record.workflowState === 'dietPlanReady' ? 'dietPlanReady' : 'reportProcessed';
+        record.planStatus = record.workflowState === 'dietPlanReady' ? 'Clinical Diet Plan Ready' : 'Recommendation Pending';
+    } else if (record.workflowState === 'noReport') {
+        record.workflowState = 'reportUploaded';
+        record.planStatus = 'Analysis Pending';
+    }
+    persistPatientRecords();
+    renderPatientHistory();
+    return record;
+}
+
+function ensureUploadPatientRecord(filename) {
     const activeRecord = getActivePatientRecord();
+    if (activeRecord) return activeRecord;
+
+    const existing = findPatientByReport(filename);
+    if (existing) {
+        const [id, record] = existing;
+        state.selectedPatient = id;
+        state.currentPatient = id;
+        state.activePatientId = id;
+        state.uploadSessionPatientId = id;
+        persistActivePatientId(id);
+        return record;
+    }
+
+    const detected = detectPatientFromReport(filename);
+    const existingByName = getPatientEntries().find(([, record]) => record.name === detected.name);
+    if (existingByName) {
+        const [id, record] = existingByName;
+        state.selectedPatient = id;
+        state.currentPatient = id;
+        state.activePatientId = id;
+        state.uploadSessionPatientId = id;
+        updateTopPatientControl(record);
+        persistActivePatientId(id);
+        return record;
+    }
+    const id = String(Math.max(...Object.keys(PATIENT_RECORDS).map(Number)) + 1);
+    const name = detected.name || 'Patient from Uploaded Report';
+    const initials = detected.initials || name.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase() || 'PR';
+    PATIENT_RECORDS[id] = {
+        patientId: detected.patientId || `NC-${Math.floor(10000 + Math.random() * 89999)}`,
+        name,
+        initials,
+        age: detected.age || '',
+        gender: detected.gender || '',
+        bmi: detected.bmi || '',
+        risk: detected.risk || 'Pending Review',
+        riskClass: detected.riskClass || 'warning',
+        lastActive: 'Just now',
+        lastUpdated: new Date().toLocaleString('en-US', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }),
+        reports: [],
+        workflowState: 'reportUploaded',
+        planStatus: 'Analysis Pending',
+        contextTags: detected.contextTags || ['Uploaded Report'],
+        restrictions: detected.restrictions || [],
+        riskFlags: detected.riskFlags || ['Report uploaded'],
+        clinicalNotes: detected.clinicalNotes || ['Patient detected from uploaded medical report.'],
+        biomarkers: detected.biomarkers || [],
+        markerValues: detected.markerValues || {},
+        messages: []
+    };
+    state.selectedPatient = id;
+    state.currentPatient = id;
+    state.activePatientId = id;
+    state.uploadSessionPatientId = id;
+    updateTopPatientControl(PATIENT_RECORDS[id]);
+    persistPatientRecords();
+    return PATIENT_RECORDS[id];
+}
+
+function simulateReportUpload(filename) {
+    const activeRecord = ensureUploadPatientRecord(filename);
     if (activeRecord && !activeRecord.reports.includes(filename)) {
         activeRecord.reports.push(filename);
         activeRecord.workflowState = 'reportUploaded';
         activeRecord.planStatus = 'Analysis Pending';
     }
+    if (activeRecord) {
+        activeRecord.lastActive = 'Just now';
+        activeRecord.lastUpdated = new Date().toLocaleString('en-US', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
 
     if (!state.uploadedFiles.includes(filename)) state.uploadedFiles.push(filename);
-    state.uploadState = 'review';
+    state.uploadState = 'processing';
     els.welcomeState.classList.add('hidden');
     els.uploadReviewState.classList.add('hidden');
     transitionToChat();
+    if (!els.chatMessages.querySelector('.patient-workspace-header')) {
+        els.chatMessages.innerHTML = createPatientWorkspaceHeader(activeRecord);
+    }
     addUploadedFileMessage(filename);
     const analyzingMessage = addAIMessage(createAnalyzingReportMessage(filename));
+    persistPatientRecords();
     renderPatientHistory();
     setTimeout(() => {
         analyzingMessage.remove();
@@ -1145,6 +1418,7 @@ function addUploadedFileMessage(filename) {
     const activeRecord = getActivePatientRecord();
     if (activeRecord && !state.isRenderingRecord) {
         activeRecord.messages.push({ sender: 'doctor', text: `Uploaded report: ${filename}` });
+        persistPatientRecords();
     }
     scrollChatToBottom();
 }
@@ -1196,7 +1470,7 @@ function createSingleUploadCard(filename) {
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
                     </svg>
-                    Begin Clinical Analysis
+                    Complete Patient Context
                 </button>
             </div>
         </div>
@@ -1230,7 +1504,7 @@ function createMultiUploadCard(files) {
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
                     </svg>
-                    Analyze ${files.length} Reports
+                    Complete Patient Context
                 </button>
             </div>
         </div>
@@ -1253,7 +1527,7 @@ function bindReviewCardButtons() {
 // ============================================
 function processReports() {
     const files = [...state.uploadedFiles];
-    const processingPatientId = state.activePatientId;
+    const processingPatientId = state.activePatientId || state.uploadSessionPatientId;
     state.uploadState = 'processing';
 
     // Transition to chat
@@ -1278,13 +1552,14 @@ function processReports() {
                     if (processedRecord) {
                         processedRecord.workflowState = 'reportProcessed';
                         processedRecord.planStatus = 'Recommendation Pending';
+                        state.uploadState = 'complete';
+                        saveCurrentPatientToHistory();
                         renderPatientHistory();
                     }
                     if (processingPatientId && processingPatientId !== state.activePatientId) return;
                     removeLastMessage();
                     addAIMessage(createExtractionMessage());
                     addAIMessage(createReviewHub());
-                    state.uploadState = 'complete';
                     bindReviewHubButtons();
                     setTimeout(openContextReviewModal, 450);
                 }, 500);
@@ -1530,6 +1805,7 @@ function addMessage(type, content, isFile = false, persist = true) {
     const activeRecord = getActivePatientRecord();
     if (persist && activeRecord && !state.isRenderingRecord) {
         activeRecord.messages.push({ sender: type === 'user' ? 'doctor' : 'ai', text: content });
+        persistPatientRecords();
     }
     scrollChatToBottom();
 }
@@ -1625,6 +1901,7 @@ function streamText(text, persist = false, patientId = state.activePatientId) {
     els.chatMessages.appendChild(msg);
     if (persist && patientId && PATIENT_RECORDS[patientId]) {
         PATIENT_RECORDS[patientId].messages.push({ sender: 'ai', text });
+        persistPatientRecords();
     }
 
     const textEl = msg.querySelector('.streaming-text');
@@ -1818,12 +2095,19 @@ function showContextPanel() {
 // DIET PLAN GENERATION
 // ============================================
 function getPlanPageHref(patientId = state.activePatientId) {
+    if (patientId) persistActivePatientId(patientId);
     return `diet-plan.html${patientId ? `?patientId=${encodeURIComponent(patientId)}` : ''}`;
 }
 
 function generateDietPlan() {
     if (!requirePatientSelection(false)) return;
     const generationPatientId = state.activePatientId;
+    const generationRecord = generationPatientId ? PATIENT_RECORDS[generationPatientId] : getActivePatientRecord();
+    const hasSavedContext = Boolean(generationRecord?.contextCompleted || generationRecord?.workflowState === 'contextReviewed' || generationRecord?.workflowState === 'dietPlanReady');
+    if (!hasSavedContext) {
+        openContextReviewModal();
+        return;
+    }
     collectPreferences();
     state.planGenerated = false;
     state.planApproved = false;
@@ -1846,12 +2130,24 @@ function generateDietPlan() {
         if (activeRecord) {
             activeRecord.workflowState = 'dietPlanReady';
             activeRecord.planStatus = 'Clinical Diet Plan Ready';
+            activeRecord.planGenerated = true;
+            activeRecord.planGeneratedAt = new Date().toLocaleString([], {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            activeRecord.dietPlanData = activeRecord.dietPlanData || {
+                nutrients: { kcal: 1720, protein: '93g', carbs: '186g', fiber: '34g' },
+                status: 'ready'
+            };
+            persistPatientRecords();
             renderPatientHistory();
         }
         if (generationPatientId && generationPatientId !== state.activePatientId) return;
         state.planGenerated = true;
         removeTypingIndicator();
-        addAIMessage(createPlanReadyChatCard(activeRecord, generationPatientId));
         renderGeneratedPlanCard();
         showPlanSuccessToast(activeRecord, generationPatientId);
         if (trigger) {
@@ -1863,54 +2159,7 @@ function generateDietPlan() {
 }
 
 function createPlanReadyChatCard(record, patientId = state.activePatientId) {
-    const details = getPatientContextDetails(record);
-    const patientName = details.name || record?.name || 'Selected patient';
-    const risk = record?.risk || 'Doctor Review';
-    const meals = details.mealsPerDay ? `${String(details.mealsPerDay).replace(' meals', '')} meals/day` : '6 meals/day';
-    const diet = details.foodPreference || 'Vegetarian';
-    const href = getPlanPageHref(patientId);
-    return `
-        <article class="plan-ready-card">
-            <div class="plan-ready-card__header">
-                <div class="plan-ready-card__icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                        <polyline points="20,6 9,17 4,12"/>
-                    </svg>
-                </div>
-                <div>
-                    <h3>Weekly Diet Plan Generated</h3>
-                    <p>Generated using report findings + saved patient context.</p>
-                </div>
-            </div>
-            <div class="plan-ready-card__body">
-                <div class="plan-ready-meta">
-                    <span><strong>Patient</strong>${patientName}</span>
-                    <span><strong>Risk level</strong><em>${risk}</em></span>
-                    <span><strong>Meal frequency</strong>${meals}</span>
-                    <span><strong>Diet preference</strong>${diet}</span>
-                </div>
-                <div class="plan-ready-focus">
-                    <span>Low GI</span>
-                    <span>Low Sodium</span>
-                    <span>Diabetes Friendly</span>
-                    <span>High Fiber</span>
-                </div>
-                <div class="plan-ready-grid">
-                    <span>7-day plan created</span>
-                    <span>Editable meal schedule</span>
-                    <span>Alternatives included</span>
-                    <span>Ready for doctor review</span>
-                </div>
-                <p class="plan-ready-copy">
-                    The weekly clinical nutrition plan has been created using medical report findings, patient allergies and food preferences, daily routine, meal frequency, and clinical restrictions.
-                </p>
-                <div class="plan-ready-actions">
-                    <a class="view-plan-btn" href="${href}">View Plan →</a>
-                    <button class="modify-context-btn" type="button" data-action="modify-context">Modify Context</button>
-                </div>
-            </div>
-        </article>
-    `;
+    return createGeneratedDietPlanCard(record, patientId);
 }
 
 function showPlanSuccessToast(record, patientId = state.activePatientId) {
@@ -2440,7 +2689,7 @@ document.addEventListener('click', (e) => {
         } else if (action === 'voice') {
             handleVoice();
         } else if (action === 'generate') {
-            if (requirePatientSelection(false)) generateDietPlan();
+            if (requirePatientSelection(false)) openContextReviewModal();
         } else if (action === 'previous') {
             const firstReady = getPatientEntries().find(([, record]) => record.workflowState === 'dietPlanReady');
             if (firstReady) selectPatientRecord(firstReady[0]);
@@ -2475,7 +2724,7 @@ document.addEventListener('click', (e) => {
 
     // Generate Plan button
     if (e.target.id === 'generatePlanBtn' || e.target.closest('#generatePlanBtn')) {
-        generateDietPlan();
+        openContextReviewModal();
     }
 });
 
@@ -2587,10 +2836,10 @@ function createContextSummaryChips(limit = 7) {
     ].slice(0, limit).map(chip => `<span class="rh-ctx-chip">${chip}</span>`).join('');
 }
 
-function createGeneratedDietPlanCard() {
-    const record = getActivePatientRecord();
-    const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const planHref = getPlanPageHref(state.activePatientId);
+function createGeneratedDietPlanCard(record = getActivePatientRecord(), patientId = state.activePatientId) {
+    const now = record?.planGeneratedAt || new Date().toLocaleString([], { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    const planHref = getPlanPageHref(patientId);
+    const nutrients = record?.dietPlanData?.nutrients || { kcal: 1720, protein: '93g', carbs: '186g', fiber: '34g' };
     return `
         <div class="review-hub-card rh-diet-plan rh-diet-plan-success rh-plan-appear" id="generatedPlanCard">
             <div class="rh-success-head">
@@ -2601,41 +2850,32 @@ function createGeneratedDietPlanCard() {
                 </div>
                 <div class="rh-card-body">
                     <div class="rh-plan-ready-title">Clinical Diet Plan Ready${record ? ` · ${record.name}` : ''}</div>
-                    <div class="rh-plan-ready-sub">Review before approval · Doctor editable</div>
                     <div class="rh-plan-metrics" aria-label="Clinical nutrition summary">
-                        <span><strong>1720</strong><small>kcal</small></span>
-                        <span><strong>93g</strong><small>Protein</small></span>
-                        <span><strong>186g</strong><small>Carbs</small></span>
-                        <span><strong>34g</strong><small>Fiber</small></span>
+                        <span><strong>${nutrients.kcal}</strong><small>kcal</small></span>
+                        <span><strong>${nutrients.protein}</strong><small>Protein</small></span>
+                        <span><strong>${nutrients.carbs}</strong><small>Carbs</small></span>
+                        <span><strong>${nutrients.fiber}</strong><small>Fiber</small></span>
                     </div>
-                    <div class="rh-plan-preview-list">
-                        <span class="rh-preview-item">Morning schedule</span>
-                        <span class="rh-preview-item">Lunch prescription</span>
-                        <span class="rh-preview-item">Evening snack</span>
-                        <span class="rh-preview-item">Dinner schedule</span>
-                        <span class="rh-preview-item">Bedtime support</span>
-                    </div>
-                    <div class="rh-ctx-chips-compact rh-plan-chips">
-                        <span class="rh-ctx-chip rh-ctx-goal">Low GI</span>
-                        <span class="rh-ctx-chip rh-ctx-pref">High Fiber</span>
-                        <span class="rh-ctx-chip rh-ctx-condition">Low Sodium</span>
-                        <span class="rh-ctx-chip rh-ctx-condition">Diabetes Friendly</span>
-                    </div>
-                    <div class="rh-plan-generated-time">Generated at ${now}</div>
+                    <div class="rh-plan-generated-time">Generated ${now}</div>
                 </div>
             </div>
-            <a class="rh-review-plan-btn" id="openGeneratedPlanBtn" href="${planHref}">
-                View Plan
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-            </a>
+            <div class="rh-plan-actions">
+                <a class="rh-review-plan-btn" id="openGeneratedPlanBtn" href="${planHref}">
+                    View Plan
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                <button class="modify-context-btn" type="button" data-action="modify-context">Modify Context</button>
+            </div>
         </div>
     `;
 }
 
 function createReviewHub() {
     const record = getActivePatientRecord();
+    const hasGeneratedPlan = Boolean(state.planGenerated || record?.workflowState === 'dietPlanReady' || record?.planGenerated);
+    if (record) record.planGenerated = hasGeneratedPlan;
     const biomarkerData = getPatientBiomarkerData();
     const totalMarkers = Object.values(biomarkerData).reduce((s, g) => s + g.markers.length, 0);
     const abnormalMarkers = Object.values(biomarkerData).reduce((s, g) => {
@@ -2663,7 +2903,7 @@ function createReviewHub() {
                 </div>
             </div>
             <div class="review-hub-cards">
-                <div class="review-hub-card rh-biomarkers">
+                <div class="review-hub-card rh-biomarkers${hasGeneratedPlan ? ' rh-card-disabled' : ''}">
                     <div class="rh-card-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v11m0 0H5m4 0h4m6-11v11m0 0h-4m4 0H9"/>
@@ -2676,9 +2916,9 @@ function createReviewHub() {
                             <span class="rh-badge rh-badge-abnormal">${abnormalMarkers} abnormal</span>
                         </div>
                     </div>
-                    <button class="rh-review-btn" id="openBiomarkersBtn">Review Findings →</button>
+                    <button class="rh-review-btn" id="openBiomarkersBtn" type="button"${hasGeneratedPlan ? ' disabled aria-disabled="true"' : ''}>Review Findings →</button>
                 </div>
-                <div class="review-hub-card rh-context">
+                <div class="review-hub-card rh-context${hasGeneratedPlan ? ' rh-card-disabled' : ''}">
                     <div class="rh-card-icon">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
@@ -2691,19 +2931,19 @@ function createReviewHub() {
                             ${createContextSummaryChips()}
                         </div>
                     </div>
-                    <button class="rh-review-btn" id="openContextReviewBtn">Review Context →</button>
+                    <button class="rh-review-btn" id="openContextReviewBtn" type="button"${hasGeneratedPlan ? ' disabled aria-disabled="true"' : ''}>Review Context →</button>
                 </div>
-                ${state.planGenerated ? createGeneratedDietPlanCard() : ''}
+                ${hasGeneratedPlan ? createGeneratedDietPlanCard(record, state.activePatientId) : ''}
             </div>
             <div class="ctx-review-section hidden" id="ctxReviewSection"></div>
-            ${!state.planGenerated ? `
+            ${!hasGeneratedPlan ? `
             <div class="rh-generate-row">
                 <p class="rh-generate-hint">Review before approval · Doctor remains in control.</p>
                 <button class="rh-generate-btn" id="proceedGenerateBtn">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polygon points="13,2 3,14 12,14 11,22 21,10 12,10"/>
                     </svg>
-                    Complete Context & Generate
+                    Complete Patient Context
                 </button>
             </div>` : ''}
         </div>
@@ -2716,8 +2956,8 @@ function bindReviewHubButtons() {
         const openCtxBtn = document.getElementById('openContextReviewBtn');
         const proceedBtn = document.getElementById('proceedGenerateBtn');
         const openPlanBtn = document.getElementById('openGeneratedPlanBtn');
-        if (openBmBtn) openBmBtn.onclick = openBiomarkerDrawer;
-        if (openCtxBtn) openCtxBtn.onclick = toggleContextReview;
+        if (openBmBtn && !openBmBtn.disabled) openBmBtn.onclick = openBiomarkerDrawer;
+        if (openCtxBtn && !openCtxBtn.disabled) openCtxBtn.onclick = toggleContextReview;
         if (proceedBtn) proceedBtn.onclick = proceedToGenerate;
         if (openPlanBtn) openPlanBtn.onclick = null;
     }, 100);
@@ -2736,6 +2976,15 @@ function renderGeneratedPlanCard() {
     const cards = document.querySelector('.review-hub-cards');
 
     if (cards) {
+        cards.querySelectorAll('.rh-biomarkers, .rh-context').forEach(card => {
+            card.classList.add('rh-card-disabled');
+            const button = card.querySelector('.rh-review-btn');
+            if (button) {
+                button.disabled = true;
+                button.setAttribute('aria-disabled', 'true');
+                button.onclick = null;
+            }
+        });
         cards.insertAdjacentHTML('beforeend', createGeneratedDietPlanCard());
 
         // Smoothly dismiss the generate row — it served its purpose
@@ -2745,13 +2994,7 @@ function renderGeneratedPlanCard() {
             setTimeout(() => { generateRow.style.display = 'none'; }, 260);
         }
     } else {
-        addAIMessage(`
-            <div class="review-hub">
-                <div class="review-hub-cards">
-                    ${createGeneratedDietPlanCard()}
-                </div>
-            </div>
-        `);
+        addAIMessage(createReviewHub());
     }
 
     bindReviewHubButtons();
@@ -2823,7 +3066,7 @@ function handleBiomarkerEsc(e) {
 function handleLogout() {
     ['sidebarCollapsed'].forEach(key => localStorage.removeItem(key));
     sessionStorage.clear();
-    window.location.href = 'landing.html';
+    window.location.href = 'login.html';
 }
 
 function renderBiomarkerGroup(groupKey) {
@@ -2937,7 +3180,7 @@ function renderContextReviewActions() {
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                     <polyline points="20,6 9,17 4,12"/>
                 </svg>
-                Save & Generate Diet Plan
+                Save and Generate
             </button>
         `}
     `;
@@ -3007,17 +3250,18 @@ function renderContextWizard() {
     const body = document.getElementById('contextReviewModalBody');
     if (!body || !state.contextWizardData) return;
     const step = CONTEXT_WIZARD_STEPS[state.contextWizardStep];
+    const stepLabel = `Step ${state.contextWizardStep + 1} of ${CONTEXT_WIZARD_STEPS.length}`;
     const header = document.querySelector('#contextReviewOverlay .context-review-header');
     if (header) header.classList.toggle('wizard-review-header', true);
     const title = document.getElementById('contextReviewTitle');
     if (title) title.textContent = 'Complete Patient Preferences';
     const headerText = document.querySelector('#contextReviewOverlay .context-review-header p');
-    if (headerText) headerText.textContent = 'Guided intake for allergies, diet choices, routine, hydration, and clinical goals.';
+    if (headerText) headerText.textContent = 'Guided intake for allergies, diet choices, and routine. Clinical focus is detected from reports and context.';
     body.innerHTML = `
         <div class="patient-context-wizard" data-step="${step.id}">
             <div class="wizard-progress-wrap">
                 <div class="wizard-progress-top">
-                    <span>${step.eyebrow}</span>
+                    <span>${stepLabel}</span>
                     <strong>${Math.round(((state.contextWizardStep + 1) / CONTEXT_WIZARD_STEPS.length) * 100)}% complete</strong>
                 </div>
                 <div class="wizard-progress-track">
@@ -3026,7 +3270,7 @@ function renderContextWizard() {
             </div>
             <section class="wizard-step-card">
                 <div class="wizard-step-intro">
-                    <span class="wizard-step-eyebrow">${step.eyebrow}</span>
+                    <span class="wizard-step-eyebrow">${stepLabel}</span>
                     <h3>${step.title}</h3>
                     <p>${step.subtitle}</p>
                 </div>
@@ -3207,6 +3451,10 @@ function getTileHelper(option, index) {
 
 function createWizardReviewSummary() {
     const data = state.contextWizardData || {};
+    const record = getActivePatientRecord();
+    const aiFocus = deriveContextTagsFromDetails(getPatientContextDetails(record))
+        .filter(tag => ![data.dietType, 'Mixed'].includes(tag))
+        .slice(0, 5);
     const item = (title, value) => `
         <div class="wizard-summary-card">
             <span>${title}</span>
@@ -3217,12 +3465,8 @@ function createWizardReviewSummary() {
         <div class="wizard-review-grid">
             ${item('Allergies', [...(data.allergies || []), data.allergyOther].filter(Boolean))}
             ${item('Diet type', data.dietType === 'Other' ? data.dietOther : data.dietType)}
-            ${item('Foods liked', [...(data.likedFoods || []), data.likedOther].filter(Boolean))}
-            ${item('Foods avoided', [...(data.avoidedFoods || []), data.avoidedNotes].filter(Boolean))}
             ${item('Routine', `${data.activityLevel || 'Not specified'} · ${data.workType || ''} · Wake ${data.wakeTime || '--'}`)}
-            ${item('Meals per day', `${data.mealsPerDay || 'Not specified'} · ${data.snackPreference || 'No snack preference'}`)}
-            ${item('Water intake', `${data.waterIntake || 'Not specified'} · Reminders: ${data.hydrationReminder || 'No'}`)}
-            ${item('Clinical focus', data.clinicalGoals || [])}
+            ${item('AI-detected clinical focus', aiFocus)}
         </div>
         <label class="wizard-field">
             <span>Final doctor instructions</span>
@@ -3342,6 +3586,7 @@ function syncWizardDataToPatient({ markReviewed = true } = {}) {
         doctorNotes: data.doctorInstructions || ''
     };
     record.patientPreferenceWizard = JSON.parse(JSON.stringify(data));
+    record.contextCompleted = Boolean(markReviewed || record.contextCompleted);
     record.contextTags = deriveContextTagsFromDetails(record.contextDetails);
     record.restrictions = restrictions;
     record.clinicalNotes = data.doctorInstructions ? [data.doctorInstructions] : record.clinicalNotes;
@@ -3350,6 +3595,7 @@ function syncWizardDataToPatient({ markReviewed = true } = {}) {
         record.planStatus = 'Context Reviewed';
     }
     renderRightPatientContext(record);
+    persistPatientRecords();
     return record;
 }
 

@@ -59,7 +59,7 @@ if (loginForm) {
 
         // Simulate auth delay then transition to dashboard
         setTimeout(() => {
-            navigateTo('index.html');
+            navigateTo(loginForm.dataset.redirect || 'workspace.html');
         }, 1200);
     });
 
@@ -100,7 +100,7 @@ document.querySelectorAll('.social-btn').forEach(btn => {
         btn.style.opacity = '0.6';
         btn.style.pointerEvents = 'none';
         setTimeout(() => {
-            navigateTo(signupForm ? 'workspace.html' : 'index.html');
+            navigateTo(btn.dataset.redirect || 'workspace.html');
         }, 1000);
     });
 });

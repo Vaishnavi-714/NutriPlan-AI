@@ -8,6 +8,11 @@ const PLAN_PATIENTS = {
     '7': { initials: 'DP', name: 'Deepak Patel', meta: 'Male · 63 yrs · BMI 25.8', risk: 'Moderate Risk' }
 };
 
+const PLAN_STORAGE_KEYS = {
+    patientRecords: 'nutricopilot.patientRecords.v1',
+    activePatientId: 'nutricopilot.activePatientId'
+};
+
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
 const MEAL_COUNT_MAP = {
@@ -30,7 +35,10 @@ const MEAL_IMAGES = {
 
 const planState = {
     activeDay: 'Monday',
-    mealCount: 7
+    mealCount: 7,
+    editingMealTitle: null,
+    patientId: null,
+    patientRecords: {}
 };
 
 const MEALS = [
@@ -94,7 +102,18 @@ const MEALS = [
 
 function initPlanPage() {
     const params = new URLSearchParams(window.location.search);
-    const patient = PLAN_PATIENTS[params.get('patientId') || params.get('patient') || '1'] || PLAN_PATIENTS['1'];
+    planState.patientRecords = getStoredPatientRecords();
+    planState.patientId = params.get('patientId') ||
+        params.get('patient') ||
+        sessionStorage.getItem(PLAN_STORAGE_KEYS.activePatientId) ||
+        localStorage.getItem(PLAN_STORAGE_KEYS.activePatientId) ||
+        '1';
+    persistPlanActivePatientId(planState.patientId);
+    const patientRecord = planState.patientRecords[planState.patientId];
+    const patient = patientRecord ? createPlanPatientFromRecord(patientRecord) : (PLAN_PATIENTS[planState.patientId] || PLAN_PATIENTS['1']);
+    applySavedMealPlan(patientRecord);
+    const workspaceLink = document.querySelector('.plan-back-link');
+    if (workspaceLink) workspaceLink.href = `workspace.html?patientId=${encodeURIComponent(planState.patientId)}`;
     document.getElementById('planAvatar').textContent = patient.initials;
     document.getElementById('planPatientName').textContent = patient.name;
     document.getElementById('planPatientMeta').textContent = patient.meta;
@@ -102,8 +121,77 @@ function initPlanPage() {
     renderTabs();
     renderMeals(planState.activeDay);
     document.getElementById('mealCountSelect').addEventListener('change', handleMealCountChange);
+    document.getElementById('hydrationSelect')?.addEventListener('change', handleHydrationChange);
+    document.getElementById('mealCarouselPrev')?.addEventListener('click', () => scrollMealCarousel(-1));
+    document.getElementById('mealCarouselNext')?.addEventListener('click', () => scrollMealCarousel(1));
     document.getElementById('approvePlanBtn').addEventListener('click', approvePlan);
     document.getElementById('exportPlanBtn').addEventListener('click', flashExport);
+    setupMealEditModal();
+}
+
+function getStoredPatientRecords() {
+    try {
+        return JSON.parse(localStorage.getItem(PLAN_STORAGE_KEYS.patientRecords) || '{}');
+    } catch (error) {
+        console.warn('Unable to read saved patient records', error);
+        return {};
+    }
+}
+
+function saveStoredPatientRecords() {
+    localStorage.setItem(PLAN_STORAGE_KEYS.patientRecords, JSON.stringify(planState.patientRecords));
+}
+
+function persistPlanActivePatientId(patientId) {
+    if (!patientId) return;
+    localStorage.setItem(PLAN_STORAGE_KEYS.activePatientId, patientId);
+    sessionStorage.setItem(PLAN_STORAGE_KEYS.activePatientId, patientId);
+}
+
+function createPlanPatientFromRecord(record) {
+    const details = [
+        record.gender,
+        record.age ? `${record.age} yrs` : '',
+        record.bmi ? `BMI ${record.bmi}` : ''
+    ].filter(Boolean).join(' · ');
+    return {
+        initials: record.initials || 'PT',
+        name: record.name || 'Patient',
+        meta: details || record.patientId || 'Clinical diet plan',
+        risk: record.risk || 'Doctor Review'
+    };
+}
+
+function applySavedMealPlan(record) {
+    const savedMeals = record?.dietPlanData?.meals;
+    if (!Array.isArray(savedMeals)) return;
+    savedMeals.forEach(savedMeal => {
+        const target = MEALS.find(meal => meal.title === savedMeal.title);
+        if (target) Object.assign(target, savedMeal);
+    });
+}
+
+function persistCurrentDietPlan() {
+    if (!planState.patientId) return;
+    const record = planState.patientRecords[planState.patientId];
+    if (!record) return;
+    record.workflowState = 'dietPlanReady';
+    record.planGenerated = true;
+    record.planStatus = 'Clinical Diet Plan Ready';
+    record.dietPlanData = {
+        ...(record.dietPlanData || {}),
+        meals: MEALS.map(meal => ({
+            title: meal.title,
+            time: meal.time,
+            kcal: meal.kcal,
+            thumb: meal.thumb,
+            foods: [...meal.foods],
+            portion: meal.portion
+        })),
+        nutrients: record.dietPlanData?.nutrients || { kcal: 1815, protein: '95g', carbs: '200g', fat: '55g', fiber: '39g' },
+        status: 'ready'
+    };
+    saveStoredPatientRecords();
 }
 
 function renderTabs() {
@@ -124,6 +212,19 @@ function renderTabs() {
     });
 }
 
+function handleHydrationChange(e) {
+    e.target.closest('.meal-count-control').classList.add('has-feedback');
+    setTimeout(() => e.target.closest('.meal-count-control')?.classList.remove('has-feedback'), 280);
+}
+
+function scrollMealCarousel(direction) {
+    const grid = document.getElementById('mealCardGrid');
+    const card = grid?.querySelector('.meal-card');
+    if (!grid || !card) return;
+    const gap = parseFloat(getComputedStyle(grid).gap || 0);
+    grid.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: 'smooth' });
+}
+
 function handleMealCountChange(e) {
     planState.mealCount = Number(e.target.value);
     e.target.closest('.meal-count-control').classList.add('has-feedback');
@@ -142,23 +243,9 @@ function renderMeals(day) {
     grid.classList.add('is-switching');
     setTimeout(() => {
         grid.innerHTML = getVisibleMeals().map((meal, index) => createMealCard(meal, index)).join('');
+        grid.scrollTo({ left: 0, behavior: 'auto' });
         grid.querySelectorAll('.meal-edit-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const card = button.closest('.meal-card');
-                card.classList.toggle('is-editing');
-                card.querySelectorAll('.food-line').forEach(line => {
-                    line.contentEditable = card.classList.contains('is-editing') ? 'true' : 'false';
-                });
-                button.textContent = card.classList.contains('is-editing') ? 'Done' : 'Edit';
-            });
-        });
-        grid.querySelectorAll('.meal-swap-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const card = button.closest('.meal-card');
-                const alternatives = card.querySelector('.alternative-block');
-                alternatives.classList.toggle('is-highlighted');
-                button.textContent = alternatives.classList.contains('is-highlighted') ? 'Review choices' : 'Suggest swap';
-            });
+            button.addEventListener('click', () => openMealEditModal(button.dataset.mealTitle));
         });
         grid.classList.remove('is-switching');
     }, 130);
@@ -169,46 +256,104 @@ function createMealCard(meal, index = 0) {
     return `
         <article class="meal-card" style="--card-delay:${index * 45}ms">
             <div class="meal-image ${meal.thumb}" style="background-image: linear-gradient(180deg, rgba(19, 34, 51, 0.02), rgba(19, 34, 51, 0.28)), url('${imageUrl}')" aria-hidden="true">
-                <span class="meal-image-label">${meal.title}</span>
+                <span class="meal-image-label">${escapeHtml(meal.title)}</span>
                 <span class="meal-image-kcal">${meal.kcal} kcal</span>
             </div>
-            <div class="meal-card-top">
-                <div>
-                    <h3>${meal.title}</h3>
-                    <div class="meal-meta"><span>${meal.time}</span><span>${meal.kcal} kcal</span><span>${meal.portion}</span></div>
-                    <p class="meal-summary">${meal.summary}</p>
-                </div>
-                <button class="meal-edit-btn">Edit</button>
+            <div class="meal-card-edit-row">
+                <button class="meal-edit-btn" type="button" data-meal-title="${escapeHtml(meal.title)}">Edit</button>
             </div>
-            <div class="meal-card-body">
-                <div class="meal-card-tags">
-                    <span>Doctor editable</span>
-                    <span>${meal.kcal} kcal</span>
-                    <span>Clinical note</span>
-                </div>
-                <span class="meal-card-subhead">Primary recommendation</span>
-                <div class="food-list">
-                    ${meal.foods.map(food => `<div class="food-line">${food}</div>`).join('')}
-                </div>
-                <div class="food-portion">Portion guidance: ${meal.portion}</div>
-                <div class="meal-note">${meal.note}</div>
-                <div class="alternative-block">
-                    <span>Alternative choices</span>
-                    <div class="alternative-row">
-                        ${meal.alternatives.map(item => `<button class="alternative-chip">${item}</button>`).join('')}
+            <div class="meal-card-scroll-body">
+                <div class="meal-card-top">
+                    <div>
+                        <h3>${escapeHtml(meal.title)}</h3>
+                        <div class="meal-meta"><span>${escapeHtml(meal.time)}</span><span>${meal.kcal} kcal</span></div>
                     </div>
                 </div>
-                <button class="meal-swap-btn" type="button">Suggest swap</button>
+                <div class="meal-card-body">
+                    <span class="meal-card-subhead">Primary recommendation</span>
+                    <div class="food-list">
+                        ${meal.foods.map(food => `<div class="food-line">${escapeHtml(food)}</div>`).join('')}
+                    </div>
+                    <span class="meal-card-subhead">Portion Size</span>
+                    <div class="food-portion">${escapeHtml(meal.portion)}</div>
+                </div>
             </div>
         </article>
     `;
 }
 
+function setupMealEditModal() {
+    const modal = document.getElementById('mealEditModal');
+    const form = document.getElementById('mealEditForm');
+    document.getElementById('mealEditClose')?.addEventListener('click', closeMealEditModal);
+    document.getElementById('mealEditCancel')?.addEventListener('click', closeMealEditModal);
+    modal?.addEventListener('click', event => {
+        if (event.target === modal) closeMealEditModal();
+    });
+    document.addEventListener('keydown', event => {
+        if (event.key === 'Escape' && !modal?.hidden) closeMealEditModal();
+    });
+    form?.addEventListener('submit', event => {
+        event.preventDefault();
+        saveMealEdit();
+    });
+}
+
+function openMealEditModal(mealTitle) {
+    const meal = MEALS.find(item => item.title === mealTitle);
+    const modal = document.getElementById('mealEditModal');
+    if (!meal || !modal) return;
+    planState.editingMealTitle = meal.title;
+    document.getElementById('mealEditTitle').textContent = `Edit ${meal.title}`;
+    document.getElementById('mealRecommendationInput').value = meal.foods.join('\n');
+    document.getElementById('mealPortionInput').value = meal.portion;
+    modal.hidden = false;
+    requestAnimationFrame(() => modal.classList.add('is-open'));
+    document.getElementById('mealRecommendationInput').focus();
+}
+
+function closeMealEditModal() {
+    const modal = document.getElementById('mealEditModal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    planState.editingMealTitle = null;
+    setTimeout(() => {
+        if (!modal.classList.contains('is-open')) modal.hidden = true;
+    }, 180);
+}
+
+function saveMealEdit() {
+    const meal = MEALS.find(item => item.title === planState.editingMealTitle);
+    if (!meal) return;
+    const recommendation = document.getElementById('mealRecommendationInput').value
+        .split('\n')
+        .map(item => item.trim())
+        .filter(Boolean);
+    meal.foods = recommendation.length ? recommendation : ['Recommendation pending'];
+    meal.portion = document.getElementById('mealPortionInput').value.trim() || 'Portion guidance pending';
+    persistCurrentDietPlan();
+    closeMealEditModal();
+    renderMeals(planState.activeDay);
+}
+
+function escapeHtml(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function approvePlan() {
     const btn = document.getElementById('approvePlanBtn');
     btn.textContent = 'Approved';
-    btn.style.background = '#43AFA3';
     btn.classList.add('is-confirmed');
+    const record = planState.patientRecords[planState.patientId];
+    if (record) {
+        record.planApproved = true;
+        persistCurrentDietPlan();
+    }
 }
 
 function flashExport() {
